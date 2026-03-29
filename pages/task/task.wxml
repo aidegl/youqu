@@ -1,0 +1,27 @@
+<!--pages/task/task.wxml-->
+<view class="container">
+  <view class="task-detail">
+    <view class="task-header">
+      <view class="task-type {{task.task_type === '一对多' ? 'many' : 'one'}}">{{task.task_type}}</view>
+      <text class="task-status">{{task.status}}</text>
+    </view>
+    <text class="task-title">{{task.title}}</text>
+    <text class="task-content">{{task.content}}</text>
+    <view class="bounty"><text class="label">悬赏金额</text><text class="amount">¥{{task.bounty_amount}}</text></view>
+  </view>
+  
+  <!-- 接取人列表（一对多时显示） -->
+  <view class="takers" wx:if="{{task.task_type === '一对多'}}">
+    <text class="section-title">已接取 ({{takers.length}})</text>
+    <view class="taker-item" wx:for="{{takers}}" wx:key="id">
+      <image src="{{item.avatar}}"></image>
+      <text class="name">{{item.nickname}}</text>
+      <text class="status {{item.status === '进行中' ? 'active' : 'done'}}">{{item.status}}</text>
+    </view>
+  </view>
+  
+  <!-- 接取按钮 -->
+  <view class="bottom-bar" wx:if="{{!isOwner && task.status === '进行中'}}">
+    <button class="btn" bindtap="takeTask">接取任务</button>
+  </view>
+</view>

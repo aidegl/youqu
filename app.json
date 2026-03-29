@@ -1,0 +1,52 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/post/post",
+    "pages/publish/publish",
+    "pages/profile/profile",
+    "pages/profile-space/profile-space",
+    "pages/messages/messages",
+    "pages/task/task",
+    "pages/activities/activities"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#3054EB",
+    "navigationBarTitleText": "友趣",
+    "navigationBarTextStyle": "white"
+  },
+  "tabBar": {
+    "color": "#cdcdcd",
+    "selectedColor": "#3054EB",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "images/home.png",
+        "selectedIconPath": "images/home_fill.png"
+      },
+      {
+        "pagePath": "pages/publish/publish",
+        "text": "发布",
+        "iconPath": "images/news_hot.png",
+        "selectedIconPath": "images/news_hot_fill.png"
+      },
+      {
+        "pagePath": "pages/messages/messages",
+        "text": "消息",
+        "iconPath": "images/mark.png",
+        "selectedIconPath": "images/mark_fill.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "images/people.png",
+        "selectedIconPath": "images/people_fill.png"
+      }
+    ]
+  },
+  "cloud": true,
+  "sitemapLocation": "sitemap.json"
+}

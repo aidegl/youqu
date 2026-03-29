@@ -1,0 +1,40 @@
+<!--pages/profile-space/profile-space.wxml-->
+<view class="container">
+  <!-- 用户信息头部 -->
+  <view class="space-header">
+    <image class="cover" src="https://fp1.mingdaoyun.cn/customIcon/0_lego.svg"></image>
+    <view class="user-section">
+      <image class="avatar" src="{{userInfo.avatar}}"></image>
+      <text class="nickname">{{userInfo.nickname}}</text>
+      <view class="user-stats">
+        <view class="stat"><text class="num">{{stats.posts}}</text><text>发布</text></view>
+        <view class="stat"><text class="num">{{stats.followers}}</text><text>粉丝</text></view>
+        <view class="stat"><text class="num">{{stats.following}}</text><text>关注</text></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 分类Tab -->
+  <view class="tabs">
+    <view class="tab {{currentTab === '赏金任务' ? 'active' : ''}}" bindtap="switchTab" data-tab="赏金任务">赏金任务</view>
+    <view class="tab {{currentTab === '问答' ? 'active' : ''}}" bindtap="switchTab" data-tab="问答">问答</view>
+    <view class="tab {{currentTab === '吐槽' ? 'active' : ''}}" bindtap="switchTab" data-tab="吐槽">吐槽</view>
+  </view>
+
+  <!-- 内容列表 -->
+  <view class="content-list">
+    <view class="content-item" wx:for="{{posts}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
+      <view class="item-header">
+        <text class="item-category {{item.category === '赏金任务' ? 'bounty' : item.category === '问答' ? 'qa' : 'rant'}}">{{item.category}}</text>
+        <text class="item-time">{{item.created_at}}</text>
+      </view>
+      <text class="item-title">{{item.title}}</text>
+      <text class="item-desc">{{item.content}}</text>
+      <view class="item-footer">
+        <text>👍 {{item.likes_count}}</text>
+        <text>💬 {{item.comments_count}}</text>
+      </view>
+    </view>
+    <view class="empty" wx:if="{{posts.length === 0}}">暂无内容</view>
+  </view>
+</view>

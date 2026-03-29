@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "hap-mcp-youqu": {
+      "url": "https://api.mingdao.com/mcp?HAP-Appkey=cd90921a105a7132&HAP-Sign=ZmIxYzFjMmVkZjIzMWYyYzlmOGY5OGIzYTg1MmNkMDIxZGU3NzEyMzhkMjgyNTFjNGE1YzE4YTYwYjJmNjc1Nw==",
+      "type": "streamable"
+    }
+  }
+}

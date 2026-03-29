@@ -1,0 +1,24 @@
+<!--pages/messages/messages.wxml-->
+<view class="container">
+  <view class="tabs">
+    <view class="tab {{currentTab === 'all' ? 'active' : ''}}" bindtap="switchTab" data-tab="all">全部</view>
+    <view class="tab {{currentTab === 'task' ? 'active' : ''}}" bindtap="switchTab" data-tab="task">任务</view>
+    <view class="tab {{currentTab === 'comment' ? 'active' : ''}}" bindtap="switchTab" data-tab="comment">评论</view>
+    <view class="tab {{currentTab === 'like' ? 'active' : ''}}" bindtap="switchTab" data-tab="like">点赞</view>
+  </view>
+  <view class="message-list">
+    <view class="message-item" wx:for="{{messages}}" wx:key="id" bindtap="goToDetail" data-item="{{item}}">
+      <image class="msg-avatar" src="{{item.sender.avatar}}"></image>
+      <view class="msg-body">
+        <view class="msg-header">
+          <text class="msg-sender">{{item.sender.nickname}}</text>
+          <text class="msg-time">{{item.created_at}}</text>
+        </view>
+        <text class="msg-content">{{item.content}}</text>
+        <view class="msg-related" wx:if="{{item.related_title}}">相关: {{item.related_title}}</view>
+      </view>
+      <view class="unread-dot" wx:if="{{!item.is_read}}"></view>
+    </view>
+    <view class="empty" wx:if="{{messages.length === 0}}">暂无消息</view>
+  </view>
+</view>

@@ -1,0 +1,89 @@
+<!--pages/post/post.wxml-->
+<view class="container">
+  <!-- 帖子内容 -->
+  <view class="post-detail">
+    <!-- 图片（顶部撑满，轮播） -->
+    <swiper class="post-images" indicator-dots style="border-radius:0;" wx:if="{{post.images.length > 0}}">
+      <swiper-item wx:for="{{post.images}}" wx:key="*this" style="border-radius:0;">
+        <image class="post-image-item" src="{{item}}" mode="aspectFill" bindtap="previewImage" data-src="{{item}}" style="border-radius:0;"></image>
+      </swiper-item>
+    </swiper>
+    
+    <!-- 标题 -->
+    <view class="post-body">
+      <text class="post-title">{{post.title}}</text>
+      <text class="post-content">{{post.content}}</text>
+    </view>
+    
+    <!-- 用户信息 -->
+    <view class="post-header">
+      <image class="author-avatar" src="{{post.author.avatar}}"></image>
+      <view class="author-info">
+        <text class="author-name">{{post.author.nickname}}</text>
+        <text class="post-time">{{post.created_at}}</text>
+      </view>
+      <view class="follow-btn" wx:if="{{!isOwner}}">关注</view>
+    </view>
+
+    <!-- 悬赏信息 -->
+    <view class="bounty-box" wx:if="{{post.category === '赏金任务'}}">
+      <view class="bounty-tag">{{post.task_type}}</view>
+      <view class="bounty-amount">悬赏 ¥{{post.bounty_amount}}</view>
+      <button class="take-btn" bindtap="takeTask" wx:if="{{!hasTaken && !isOwner}}">接取任务</button>
+      <view class="taken-tip" wx:if="{{hasTaken && !isOwner}}">已接取</view>
+    </view>
+
+    <!-- 互动按钮 -->
+    <view class="action-bar">
+      <view class="action-item {{post.isLiked ? 'active' : ''}}" bindtap="toggleLike">
+        <text class="icon">{{post.isLiked ? '❤️' : '🤍'}}</text>
+        <text>{{post.likes_count}}</text>
+      </view>
+      <view class="action-item">
+        <text class="icon">💬</text>
+        <text>{{post.comments_count}}</text>
+      </view>
+      <view class="action-item">
+        <text class="icon">📤</text>
+        <text>分享</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 评论区域 -->
+  <view class="comments-section">
+    <view class="section-title">评论 {{post.comments_count}}</view>
+    
+    <view class="comments-list">
+      <view class="comment-item" wx:for="{{comments}}" wx:key="id">
+        <image class="comment-avatar" src="{{item.author.avatar}}"></image>
+        <view class="comment-body">
+          <view class="comment-header">
+            <text class="comment-author">{{item.author.nickname}}</text>
+            <text class="comment-time">{{item.created_at}}</text>
+          </view>
+          <text class="comment-content">{{item.content}}</text>
+          <view class="comment-actions">
+            <text class="action" bindtap="replyComment" data-id="{{item.id}}">回复</text>
+            <text class="action" bindtap="likeComment" data-id="{{item.id}}">赞 {{item.likes_count}}</text>
+          </view>
+        </view>
+      </view>
+      
+      <view class="no-comment" wx:if="{{comments.length === 0}}">
+        <text>暂无评论，快来抢沙发吧~</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部评论输入 -->
+  <view class="comment-input-box">
+    <input 
+      class="comment-input" 
+      placeholder="说点什么..." 
+      bindinput="onCommentInput"
+      value="{{commentText}}"
+    />
+    <button class="send-btn" bindtap="submitComment">发送</button>
+  </view>
+</view>

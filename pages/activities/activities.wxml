@@ -1,0 +1,132 @@
+<!--pages/activities/activities.wxml-->
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">📅 精彩活动</text>
+    <text class="page-subtitle">发现有趣的活动，丰富你的生活</text>
+  </view>
+
+  <!-- 活动分类筛选 -->
+  <view class="filter-bar">
+    <scroll-view class="filter-scroll" scroll-x>
+      <view class="filter-list">
+        <view 
+          class="filter-item {{currentType === '' ? 'active' : ''}}" 
+          data-type=""
+          bindtap="switchType"
+        >
+          全部
+        </view>
+        <view 
+          class="filter-item {{currentType === '摄影' ? 'active' : ''}}" 
+          data-type="摄影"
+          bindtap="switchType"
+        >
+          🎨 摄影
+        </view>
+        <view 
+          class="filter-item {{currentType === '娱乐' ? 'active' : ''}}" 
+          data-type="娱乐"
+          bindtap="switchType"
+        >
+          🎵 娱乐
+        </view>
+        <view 
+          class="filter-item {{currentType === '学习' ? 'active' : ''}}" 
+          data-type="学习"
+          bindtap="switchType"
+        >
+          📚 学习
+        </view>
+        <view 
+          class="filter-item {{currentType === '运动' ? 'active' : ''}}" 
+          data-type="运动"
+          bindtap="switchType"
+        >
+          🏃 运动
+        </view>
+        <view 
+          class="filter-item {{currentType === '美食' ? 'active' : ''}}" 
+          data-type="美食"
+          bindtap="switchType"
+        >
+          🍳 美食
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 活动列表 -->
+  <view class="activity-list">
+    <view 
+      class="activity-card" 
+      wx:for="{{filteredActivities}}" 
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="goToDetail"
+    >
+      <!-- 活动头图 - 使用封面图字段 -->
+      <view class="activity-cover" wx:if="{{item.cover}}">
+        <image class="cover-image" src="{{item.cover}}" mode="aspectFill"></image>
+        <view class="activity-type">{{item.task_type}}</view>
+      </view>
+      
+      <!-- 无封面图时的色块 -->
+      <view class="activity-cover no-image" wx:else>
+        <text class="no-image-icon">📅</text>
+        <view class="activity-type">{{item.task_type}}</view>
+      </view>
+
+      <!-- 活动内容 -->
+      <view class="activity-content">
+        <text class="activity-title">{{item.title}}</text>
+        <text class="activity-desc">{{item.content}}</text>
+        
+        <!-- 活动信息 -->
+        <view class="activity-info">
+          <view class="info-item" wx:if="{{item.bounty_amount > 0}}">
+            <text class="info-icon">💰</text>
+            <text class="info-text">奖金 ¥{{item.bounty_amount}}</text>
+          </view>
+          <view class="info-item">
+            <text class="info-icon">👥</text>
+            <text class="info-text">{{item.likes_count || 0}} 人参与</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 底部操作栏 -->
+      <view class="activity-footer">
+        <view class="footer-item">
+          <text class="footer-icon">👍</text>
+          <text class="footer-text">{{item.likes_count || 0}}</text>
+        </view>
+        <view class="footer-item">
+          <text class="footer-icon">💬</text>
+          <text class="footer-text">{{item.comments_count || 0}}</text>
+        </view>
+        <view class="footer-item">
+          <text class="footer-icon">👁️</text>
+          <text class="footer-text">{{item.views_count || 0}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{filteredActivities.length === 0 && !loading}}">
+      <text class="empty-icon">📭</text>
+      <text class="empty-text">暂无活动</text>
+      <text class="empty-hint">换个分类试试吧~</text>
+    </view>
+
+    <!-- 加载状态 -->
+    <view class="loading-state" wx:if="{{loading}}">
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <!-- 没有更多 -->
+    <view class="no-more" wx:if="{{!hasMore && filteredActivities.length > 0}}">
+      <text class="no-more-text">没有更多活动了</text>
+    </view>
+  </view>
+</view>

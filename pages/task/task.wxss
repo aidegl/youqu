@@ -1,0 +1,23 @@
+/* pages/task/task.wxss */
+.container { min-height: 100vh; background: #f5f5f5; padding-bottom: 120rpx; }
+.task-detail { background: #fff; padding: 30rpx; margin-bottom: 20rpx; }
+.task-header { display: flex; justify-content: space-between; margin-bottom: 20rpx; }
+.task-type { padding: 8rpx 16rpx; border-radius: 8rpx; font-size: 24rpx; }
+.task-type.many { background: #E3F2FD; color: #2196F3; }
+.task-type.one { background: #F3E5F5; color: #9C27B0; }
+.task-status { color: #4CAF50; font-size: 26rpx; }
+.task-title { display: block; font-size: 36rpx; font-weight: 600; margin-bottom: 16rpx; }
+.task-content { display: block; font-size: 28rpx; color: #666; line-height: 1.6; margin-bottom: 24rpx; }
+.bounty { display: flex; align-items: center; }
+.bounty .label { font-size: 26rpx; color: #999; margin-right: 16rpx; }
+.bounty .amount { font-size: 40rpx; color: #FF5722; font-weight: 600; }
+.takers { background: #fff; padding: 30rpx; }
+.section-title { font-size: 30rpx; font-weight: 600; margin-bottom: 20rpx; display: block; }
+.taker-item { display: flex; align-items: center; padding: 20rpx 0; border-bottom: 1rpx solid #f0f0f0; }
+.taker-item image { width: 64rpx; height: 64rpx; border-radius: 50%; margin-right: 16rpx; background: #eee; }
+.taker-item .name { flex: 1; font-size: 28rpx; }
+.taker-item .status { font-size: 24rpx; padding: 4rpx 12rpx; border-radius: 4rpx; }
+.taker-item .status.active { background: #FFF3E0; color: #FF9800; }
+.taker-item .status.done { background: #E8F5E9; color: #4CAF50; }
+.bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; padding: 20rpx 30rpx; background: #fff; border-top: 1rpx solid #eee; }
+.btn { background: #3054EB; color: #fff; border-radius: 44rpx; }

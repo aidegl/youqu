@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Administrator/.claude/skills/**)",
+      "Bash(dir \"C:\\\\Users\\\\Administrator\\\\.claude\\skills\")"
+    ]
+  },
+  "enableAllProjectMcpServers": true
+}

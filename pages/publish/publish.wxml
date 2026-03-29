@@ -1,0 +1,60 @@
+<!--pages/publish/publish.wxml-->
+<view class="container">
+  <view class="form">
+    <!-- 分类选择 -->
+    <view class="form-item">
+      <text class="label">选择分类</text>
+      <view class="category-list">
+        <view 
+          class="category-btn {{category === item.id ? 'active' : ''}}" 
+          wx:for="{{categories}}" 
+          wx:key="id"
+          data-id="{{item.id}}"
+          bindtap="selectCategory"
+        >{{item.name}}</view>
+      </view>
+    </view>
+
+    <!-- 悬赏任务选项 -->
+    <view class="form-item" wx:if="{{category === '赏金任务'}}">
+      <text class="label">任务类型</text>
+      <view class="category-list">
+        <view class="category-btn {{taskType === '一对多' ? 'active' : ''}}" bindtap="selectTaskType" data-type="一对多">一对多</view>
+        <view class="category-btn {{taskType === '一对一' ? 'active' : ''}}" bindtap="selectTaskType" data-type="一对一">一对一</view>
+      </view>
+    </view>
+
+    <!-- 悬赏金额 -->
+    <view class="form-item" wx:if="{{category === '赏金任务'}}">
+      <text class="label">悬赏金额</text>
+      <input class="input" type="number" placeholder="请输入金额" bindinput="onBountyInput"/>
+    </view>
+
+    <!-- 标题 -->
+    <view class="form-item">
+      <text class="label">标题</text>
+      <input class="input" placeholder="请输入标题" bindinput="onTitleInput"/>
+    </view>
+
+    <!-- 内容 -->
+    <view class="form-item">
+      <text class="label">内容</text>
+      <textarea class="textarea" placeholder="请输入详细内容..." bindinput="onContentInput"></textarea>
+    </view>
+
+    <!-- 图片 -->
+    <view class="form-item">
+      <text class="label">图片</text>
+      <view class="image-list">
+        <view class="image-item" wx:for="{{images}}" wx:key="*this">
+          <image src="{{item}}" mode="aspectFill"></image>
+          <view class="delete-btn" bindtap="deleteImage" data-index="{{index}}">×</view>
+        </view>
+        <view class="add-image" bindtap="chooseImage">+</view>
+      </view>
+    </view>
+
+    <!-- 发布按钮 -->
+    <button class="submit-btn" bindtap="submitPost">发布</button>
+  </view>
+</view>
