@@ -1,6 +1,9 @@
 // utils/api.js - HAP V3 API 封装
 const app = getApp();
 
+// 通用登录 API 配置
+const AUTH_API_BASE = 'https://100000whys.cn/shuxiaohe/api/user';
+
 // HAP 应用配置
 const HAP_CONFIG = {
   appkey: 'cd90921a105a7132',
@@ -374,11 +377,47 @@ async function toggleLike(userId, targetType, targetId) {
   return result;
 }
 
-async function getOrCreateUser(openid, userInfo = {}) {
-  const result = await getRows(WORKSHEET_ID.users, {
-    filter: { type: 'group', logic: 'AND', children: [{ type: 'condition', field: 'openid', operator: 'eq', value: [openid] }] },
-    pageSize: 1
+/**
+ * 通用登录 API - 通过微信 code 换取 openid 并获取/创建用户
+ * @param {string} code - 微信登录 code
+ * @returns {Promise} { success, data: { id, openid, nickname, avatar, token } }
+ */
+async function code2session(code) {
+  return new Promise((resolve) => {
+    wx.request({
+      url: `${AUTH_API_BASE}/code2session`,
+      method: 'POST',
+      header: {
+        'Content-Type': 'application/json',
+        'X-Source': 'miniprogram'
+      },
+      data: { code },
+      success: (res) => {
+        console.log('[code2session] 响应:', res.data);
+        if (res.data && res.data.code === 200 && res.data.data) {
+          resolve({
+            success: true,
+            data: {
+              id: res.data.data.user.id,
+              openid: res.data.data.user.openid,
+              nickname: res.data.data.user.nickname,
+              avatar: res.data.data.user.avatar,
+              token: res.data.data.token
+            }
+          });
+        } else {
+          resolve({ success: false, error_msg: res.data?.message || '登录失败', data: null });
+        }
+      },
+      fail: (err) => {
+        console.error('[code2session] 请求失败:', err);
+        resolve({ success: false, error_msg: err.errMsg, data: null });
+      }
+    });
   });
+}
+
+async function getOrCreateUser(openid, userInfo = {}) {
 
   if (result.success && result.data?.rows?.length > 0) {
     const user = result.data.rows[0];
@@ -552,7 +591,7 @@ module.exports = {
   getRows, getRow, createRow, updateRow,
   getPosts, getPostDetail, createPost,
   getComments, addComment, toggleLike,
-  getOrCreateUser, getUserInfo, getUserPosts,
+  getOrCreateUser, getUserInfo, code2session, getUserPosts,
   getMessages, getBanners, markMessageRead, takeTask,
   WORKSHEET_ID, HAP_CONFIG
 };
