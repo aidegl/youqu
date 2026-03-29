@@ -389,7 +389,7 @@ async function code2session(code) {
       method: 'POST',
       header: {
         'Content-Type': 'application/json',
-        'X-Source': 'miniprogram'
+        'X-Source': 'youqu'
       },
       data: { code },
       success: (res) => {
