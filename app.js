@@ -46,12 +46,9 @@ App({
           wx.setStorageSync('userInfo', userInfo);
           wx.setStorageSync('token', userInfo.token);
           resolve(userInfo);
-          } else {
-            reject(new Error('获取用户信息失败'));
-          }
         },
         fail: (err) => {
-          console.error('[云开发登录] 失败:', err);
+          console.error('[登录] 失败:', err);
           reject(err);
         }
       });
