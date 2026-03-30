@@ -139,5 +139,17 @@ Page({
   goToUserSpace(e) {
     const userId = e.currentTarget.dataset.id;
     wx.navigateTo({ url: `/pages/profile-space/profile-space?id=${userId}` });
+  },
+
+  // 分享
+  onShareAppMessage() {
+    const post = this.data.post;
+    if (!post) return;
+
+    return {
+      title: post.title,
+      path: `/pages/post/post?id=${this.data.postId}`,
+      imageUrl: post.images && post.images.length > 0 ? post.images[0] : ''
+    };
   }
 });

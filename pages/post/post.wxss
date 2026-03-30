@@ -110,27 +110,28 @@
 }
 
 .bounty-tag {
-  padding: 8rpx 16rpx;
-  background: #FF9800;
-  color: #fff;
-  border-radius: 8rpx;
-  font-size: 24rpx;
+  font-size: 30rpx;
+  color: #FF9800;
   margin-right: 16rpx;
 }
 
 .bounty-amount {
   flex: 1;
-  font-size: 36rpx;
+  font-size: 30rpx;
   color: #FF5722;
   font-weight: 600;
 }
 
 .take-btn {
-  padding: 16rpx 40rpx;
-  background: #3054EB;
+  height: 72rpx;
+  padding: 0 40rpx;
+  background: #FF9800;
   color: #fff;
-  border-radius: 30rpx;
+  border-radius: 12rpx;
   font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .taken-tip {
@@ -155,6 +156,15 @@
   align-items: center;
   color: #666;
   font-size: 28rpx;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  line-height: normal;
+}
+
+.action-item::after {
+  border: none;
 }
 
 .action-item .icon {

@@ -188,16 +188,13 @@
 }
 
 .bounty-tag {
-  padding: 4rpx 10rpx;
-  background: #FFF3E0;
+  font-size: 32rpx;
   color: #FF9800;
-  border-radius: 6rpx;
-  font-size: 20rpx;
-  margin-right: 8rpx;
+  margin-right: 12rpx;
 }
 
 .bounty-amount {
-  font-size: 28rpx;
+  font-size: 32rpx;
   color: #FF5722;
   font-weight: 600;
 }
@@ -228,11 +225,8 @@
 }
 
 .bounty-tag {
-  padding: 6rpx 12rpx;
-  background: #FFF3E0;
+  font-size: 32rpx;
   color: #FF9800;
-  border-radius: 6rpx;
-  font-size: 22rpx;
   margin-right: 12rpx;
 }
 

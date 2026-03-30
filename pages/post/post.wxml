@@ -27,7 +27,7 @@
 
     <!-- 悬赏信息 -->
     <view class="bounty-box" wx:if="{{post.category === '赏金任务'}}">
-      <view class="bounty-tag">{{post.task_type}}</view>
+      <text class="bounty-tag">【{{post.task_type}}】</text>
       <view class="bounty-amount">悬赏 ¥{{post.bounty_amount}}</view>
       <button class="take-btn" bindtap="takeTask" wx:if="{{!hasTaken && !isOwner}}">接取任务</button>
       <view class="taken-tip" wx:if="{{hasTaken && !isOwner}}">已接取</view>
@@ -43,10 +43,10 @@
         <text class="icon">💬</text>
         <text>{{post.comments_count}}</text>
       </view>
-      <view class="action-item">
+      <button class="action-item" open-type="share">
         <text class="icon">📤</text>
         <text>分享</text>
-      </view>
+      </button>
     </view>
   </view>
 

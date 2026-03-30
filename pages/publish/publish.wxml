@@ -20,7 +20,7 @@
       <text class="label">任务类型</text>
       <view class="category-list">
         <view class="category-btn {{taskType === '一对多' ? 'active' : ''}}" bindtap="selectTaskType" data-type="一对多">一对多</view>
-        <view class="category-btn {{taskType === '一对一' ? 'active' : ''}}" bindtap="selectTaskType" data-type="一对一">一对一</view>
+        <text class="task-type-text {{taskType === '一对一' ? 'active' : ''}}" bindtap="selectTaskType" data-type="一对一">【一对一】</text>
       </view>
     </view>
 

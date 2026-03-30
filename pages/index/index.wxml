@@ -42,7 +42,7 @@
         <view class="post-title-row">
           <text class="post-title">{{item.title}}</text>
           <view class="bounty-info" wx:if="{{item.category === '赏金任务'}}">
-            <text class="bounty-tag">{{item.task_type}}</text>
+            <text class="bounty-tag">【{{item.task_type}}】</text>
             <text class="bounty-amount">¥{{item.bounty_amount}}</text>
           </view>
         </view>
@@ -54,14 +54,12 @@
 
         <!-- 用户信息 -->
         <view class="post-header">
-          <image 
-            class="author-avatar" 
-            src="{{item.author.avatar}}" 
-            data-id="{{item.author.id}}"
-            catchtap="goToUserSpace"
+          <image
+            class="author-avatar"
+            src="{{item.author.avatar}}"
           ></image>
           <view class="author-info">
-            <text class="author-name" data-id="{{item.author.id}}" catchtap="goToUserSpace">{{item.author.nickname}}</text>
+            <text class="author-name">{{item.author.nickname}}</text>
             <text class="post-time">{{item.created_at}}</text>
           </view>
           <view class="post-category {{item.category === '赏金任务' ? 'bounty' : item.category === '问答' ? 'qa' : 'rant'}}">{{item.category}}</view>
