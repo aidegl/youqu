@@ -83,7 +83,12 @@ Page({
     }
 
     this.setData({ submitting: true });
-    wx.showLoading({ title: '发布中...' });
+
+    // 显示加载提示（如果有图片，提示正在上传）
+    const loadingText = this.data.images.length > 0
+      ? `正在上传图片(0/${this.data.images.length})...`
+      : '发布中...';
+    wx.showLoading({ title: loadingText, mask: true });
 
     const res = await api.createPost({
       title: this.data.title,
@@ -91,7 +96,7 @@ Page({
       category: this.data.category,
       task_type: this.data.taskType,
       bounty_amount: parseFloat(this.data.bountyAmount) || 0,
-      images: this.data.images
+      images: this.data.images  // 本地路径，createPost 内部会上传
     });
 
     wx.hideLoading();

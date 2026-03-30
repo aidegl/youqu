@@ -1,5 +1,4 @@
 // utils/api.js - HAP V3 API 封装
-const app = getApp();
 
 // 通用登录 API 配置
 // youqu 独立路径，Nginx 自动加 X-Source: youqu
@@ -304,8 +303,84 @@ async function getPostDetail(postId) {
   return { success: false, data: null };
 }
 
-async function createPost(data) {
-  const userInfo = app.globalData.userInfo || {};
+/**
+ * 上传图片到临时服务器，获取 HTTP URL
+ * 用于后续写入 HAP 附件字段（HAP 会从 URL 下载并永久存储）
+ *
+ * @param {string} localFilePath - 微信小程序本地图片路径
+ * @returns {Promise<string>} - 临时 HTTP URL
+ */
+async function uploadImageToTemp(localFilePath) {
+  return new Promise((resolve, reject) => {
+    wx.uploadFile({
+      url: 'https://100000whys.cn/temp/',
+      filePath: localFilePath,
+      name: 'file',
+      success: (res) => {
+        console.log('[uploadImageToTemp] 响应:', res.data);
+        try {
+          const data = JSON.parse(res.data);
+          if (data.code === 200) {
+            resolve(data.data.url);  // https://100000whys.cn/temp/xxx.png
+          } else {
+            reject(new Error(data.message || '上传失败'));
+          }
+        } catch (e) {
+          reject(new Error('解析响应失败'));
+        }
+      },
+      fail: (err) => {
+        console.error('[uploadImageToTemp] 上传失败:', err);
+        reject(err);
+      }
+    });
+  });
+}
+
+/**
+ * 批量上传图片到临时服务器
+ *
+ * @param {string[]} localFilePaths - 本地图片路径数组
+ * @returns {Promise<string[]>} - HTTP URL 数组
+ */
+async function uploadImagesToTemp(localFilePaths) {
+  if (!localFilePaths || localFilePaths.length === 0) return [];
+
+  const results = [];
+  for (const filePath of localFilePaths) {
+    try {
+      const url = await uploadImageToTemp(filePath);
+      results.push(url);
+      console.log('[uploadImagesToTemp] 成功:', url);
+    } catch (e) {
+      console.error('[uploadImagesToTemp] 失败:', filePath, e);
+      // 单个失败不中断整个流程，可以继续上传其他图片
+    }
+  }
+  return results;
+}
+
+/**
+ * 创建帖子（包含图片上传）
+ * 图片流程：本地图片 → 临时服务器 → HAP 附件字段（永久存储）
+ *
+ * @param {Object} data - 帖子数据
+ * @param {Object} userInfo - 用户信息（可选，不传则自动获取）
+ */
+async function createPost(data, userInfo = null) {
+  // 在函数内部获取 app，避免模块加载时 getApp() 返回 undefined
+  const app = getApp();
+  const user = userInfo || app?.globalData?.userInfo || {};
+
+  // 1. 先上传图片到临时服务器
+  let imageUrls = [];
+  if (data.images?.length > 0) {
+    console.log('[createPost] 开始上传图片，数量:', data.images.length);
+    imageUrls = await uploadImagesToTemp(data.images);
+    console.log('[createPost] 图片上传完成，URLs:', imageUrls);
+  }
+
+  // 2. 构建 HAP 附件字段格式
   const postData = {
     title: data.title,
     content: data.content,
@@ -318,12 +393,23 @@ async function createPost(data) {
     views_count: 0,
     created_at: new Date().toISOString()
   };
-  if (data.images?.length > 0) {
-    postData.images = data.images.map(url => ({ url, name: 'image.jpg' }));
+
+  // 使用字段别名 fengmiantu，格式：[{ url, name }]
+  if (imageUrls.length > 0) {
+    postData.fengmiantu = imageUrls.map(url => ({
+      url,
+      name: 'image.jpg'
+    }));
   }
-  if (userInfo.id) {
-    postData.author_id = [userInfo.id];
+
+  if (user.id) {
+    postData.author_id = [user.id];
+    postData.zznc = user.nickname || '用户';
+    if (user.avatar) {
+      postData.zztx = [{ url: user.avatar }];
+    }
   }
+
   return createRow(WORKSHEET_ID.posts, postData);
 }
 
@@ -341,7 +427,8 @@ async function getComments(postId, page = 1, pageSize = 50) {
 }
 
 async function addComment(data) {
-  const userInfo = app.globalData.userInfo || {};
+  const app = getApp();
+  const userInfo = app?.globalData?.userInfo || {};
   const commentData = {
     post_id: [data.post_id],
     content: data.content,
@@ -594,5 +681,6 @@ module.exports = {
   getComments, addComment, toggleLike,
   getOrCreateUser, getUserInfo, code2session, getUserPosts,
   getMessages, getBanners, markMessageRead, takeTask,
+  uploadImageToTemp, uploadImagesToTemp,
   WORKSHEET_ID, HAP_CONFIG
 };
