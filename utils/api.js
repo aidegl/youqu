@@ -2,7 +2,8 @@
 const app = getApp();
 
 // 通用登录 API 配置
-const AUTH_API_BASE = 'https://100000whys.cn/shuxiaohe/api/user';
+// youqu 独立路径，Nginx 自动加 X-Source: youqu
+const AUTH_API_BASE = 'https://100000whys.cn/youqu/api';
 
 // HAP 应用配置
 const HAP_CONFIG = {
@@ -388,12 +389,12 @@ async function code2session(code) {
       url: `${AUTH_API_BASE}/code2session`,
       method: 'POST',
       header: {
-        'Content-Type': 'application/json',
-        'X-Source': 'youqu'
+        'Content-Type': 'application/json'
       },
       data: { code },
       success: (res) => {
         console.log('[code2session] 响应:', res.data);
+        // shuxiaohe-auth 返回格式: { code: 200, message: 'success', data: { token, expiresIn, user: { id, openid, nickname, avatar, balance, source } } }
         if (res.data && res.data.code === 200 && res.data.data) {
           resolve({
             success: true,
