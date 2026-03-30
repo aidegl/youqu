@@ -142,44 +142,67 @@ function formatPost(row) {
       }
     });
   }
-  
+
   // 获取封面图（取第一张）
   const coverUrl = postImages.length > 0 ? postImages[0] : '';
-  
-  // 获取 category 字段（使用字段 ID 69b5db79440840fde287375b）
-  const categoryField = row['69b5db79440840fde287375b'];
-  const categoryValue = categoryField?.[0]?.value || '';
-  
-  // 获取作者信息：zznc 和 zztx 直接在 row 层级
+
+  // 获取分类字段（字段 ID: 69b5db79440840fde287375b）
+  const categoryValue = row['69b5db79440840fde287375b']?.[0]?.value || '';
+
+  // 获取任务类型字段（字段 ID: 69b5db79440840fde287375c）
+  const taskTypeValue = row['69b5db79440840fde287375c']?.[0]?.value || '';
+
+  // 获取状态字段（字段 ID: 69b5db79440840fde287375e）
+  const statusValue = row['69b5db79440840fde287375e']?.[0]?.value || '';
+
+  // 获取悬赏金额（字段 ID: 69b5db79440840fde287375d）
+  const bountyAmount = parseFloat(row['69b5db79440840fde287375d']) || 0;
+
+  // 获取发布时间（字段 ID: 69b5db79440840fde2873762）
+  const createdAt = row['69b5db79440840fde2873762'] || row.created_at || '';
+
+  // 获取作者信息：zznc 和 zztx 是他表字段，直接在 row 层级
   let authorNickname = '未知';
   let authorAvatar = 'https://fp1.mingdaoyun.cn/customIcon/0_lego.svg';
   let authorId = '';
-  
-  // 昵称从 zznc 获取（直接在 row 层级）
+
+  // 昵称从 zznc 获取（他表字段）
   if (row.zznc && typeof row.zznc === 'string') {
     authorNickname = row.zznc;
   }
-  
-  // 头像从 zztx 获取（直接在 row 层级，和封面图同样方式）
+
+  // 头像从 zztx 获取（他表字段）
   if (row.zztx && Array.isArray(row.zztx) && row.zztx.length > 0) {
     const avatarImg = row.zztx[0];
     if (typeof avatarImg === 'object') {
       authorAvatar = avatarImg.downloadUrl || avatarImg.large_thumbnail_full_path || avatarImg.url || '';
     }
   }
-  
-  // 作者 ID 从 author_id 关联字段获取
-  if (row.author_id && Array.isArray(row.author_id) && row.author_id.length > 0) {
-    authorId = row.author_id[0].sid || row.author_id[0].id || '';
+
+  // 作者 ID 从作者关联字段获取（字段 ID: 69b5db79440840fde2873759）
+  const authorField = row['69b5db79440840fde2873759'];
+  if (authorField && Array.isArray(authorField) && authorField.length > 0) {
+    authorId = authorField[0].sid || authorField[0].id || '';
   }
-  
+
+  // 获取统计字段
+  const likesCount = parseInt(row['69b5db79440840fde287375f']) || parseInt(row.likes_count) || 0;
+  const commentsCount = parseInt(row['69b5db79440840fde2873760']) || parseInt(row.comments_count) || 0;
+  const viewsCount = parseInt(row['69b5db79440840fde2873761']) || parseInt(row.views_count) || 0;
+
   // 获取帖子 ID（兼容 rowid 和 rowId）
   const id = row.rowid || row.rowId || '';
-  
+
+  // 标题和内容 - 同时检查别名和字段 ID
+  // 标题字段 ID: 69b5db79440840fde2873756
+  // 内容字段 ID: 69b5db79440840fde2873757
+  const title = row.title || row['69b5db79440840fde2873756'] || '';
+  const content = row.content || row['69b5db79440840fde2873757'] || '';
+
   return {
     id: id,
-    title: row.title || '',
-    content: row.content || '',
+    title: title,
+    content: content,
     cover: coverUrl,
     images: postImages,
     author: {
@@ -188,13 +211,13 @@ function formatPost(row) {
       avatar: authorAvatar
     },
     category: categoryValue,
-    task_type: formatOption(row.task_type),
-    bounty_amount: parseFloat(row.bounty_amount) || 0,
-    likes_count: parseInt(row.likes_count) || 0,
-    comments_count: parseInt(row.comments_count) || 0,
-    views_count: parseInt(row.views_count) || 0,
-    status: formatOption(row.status),
-    created_at: formatTime(row.created_at)
+    task_type: taskTypeValue,
+    bounty_amount: bountyAmount,
+    likes_count: likesCount,
+    comments_count: commentsCount,
+    views_count: viewsCount,
+    status: statusValue,
+    created_at: formatTime(createdAt)
   };
 }
 
@@ -287,9 +310,10 @@ async function getPostDetail(postId) {
     console.log('===== [getPostDetail] 成功 =====\n');
     
     // 更新浏览量（静默更新，不处理错误）
+    // 浏览量字段 ID: 69b5db79440840fde2873761
     try {
-      const viewsCount = parseInt(row['69b5db79440840fde2873760'] || row.views_count) || 0;
-      updateRow(WORKSHEET_ID.posts, postId, { views_count: viewsCount + 1 }, false).catch(() => {
+      const viewsCount = parseInt(row['69b5db79440840fde2873761']) || 0;
+      updateRow(WORKSHEET_ID.posts, postId, { '69b5db79440840fde2873761': viewsCount + 1 }, false).catch(() => {
         // 静默忽略更新失败
       });
     } catch (e) {
@@ -380,21 +404,52 @@ async function createPost(data, userInfo = null) {
     console.log('[createPost] 图片上传完成，URLs:', imageUrls);
   }
 
-  // 2. 构建 HAP 附件字段格式
+  // 2. 构建 HAP 数据 - 使用字段 ID + option key
+  // 字段 ID 对照表：
+  // - 标题: 69b5db79440840fde2873756 (别名 title)
+  // - 内容: 69b5db79440840fde2873757 (别名 content)
+  // - 作者: 69b5db79440840fde2873759 (关联字段)
+  // - 分类: 69b5db79440840fde287375b
+  // - 任务类型: 69b5db79440840fde287375c
+  // - 悬赏金额: 69b5db79440840fde287375d
+  // - 状态: 69b5db79440840fde287375e
+  // - 点赞数: 69b5db79440840fde287375f
+  // - 评论数: 69b5db79440840fde2873760
+  // - 浏览数: 69b5db79440840fde2873761
+  // - 发布时间: 69b5db79440840fde2873762
+  // - 封面图: 69c52489934946ff834d930d (别名 fengmiantu)
+  // - zztx/zznc 是他表字段，只读不可写入！
+
   const postData = {
-    title: data.title,
-    content: data.content,
-    category: data.category,
-    task_type: data.task_type || '',
-    bounty_amount: data.bounty_amount || 0,
-    status: '进行中',
+    // 基础字段 - 使用字段 ID 确保写入成功
+    // 标题字段 ID: 69b5db79440840fde2873756
+    '69b5db79440840fde2873756': data.title,
+    // 内容字段 ID: 69b5db79440840fde2873757
+    '69b5db79440840fde2873757': data.content,
+    // 分类字段 - 字段 ID: 69b5db79440840fde287375b
+    '69b5db79440840fde287375b': getCategoryKey(data.category),
+    // 统计字段
     likes_count: 0,
     comments_count: 0,
     views_count: 0,
-    created_at: new Date().toISOString()
+    // 发布时间 - 字段 ID: 69b5db79440840fde2873762
+    '69b5db79440840fde2873762': new Date().toISOString()
   };
 
-  // 使用字段别名 fengmiantu，格式：[{ url, name }]
+  // 任务类型 - 字段 ID: 69b5db79440840fde287375c
+  if (data.task_type) {
+    postData['69b5db79440840fde287375c'] = getTaskTypeKey(data.task_type);
+  }
+
+  // 悬赏金额 - 字段 ID: 69b5db79440840fde287375d
+  if (data.bounty_amount) {
+    postData['69b5db79440840fde287375d'] = parseFloat(data.bounty_amount) || 0;
+  }
+
+  // 状态字段 - 字段 ID: 69b5db79440840fde287375e，默认"进行中"
+  postData['69b5db79440840fde287375e'] = ['e0c24f01-b748-4b17-8030-31a8a2c58760'];
+
+  // 封面图字段（使用别名 fengmiantu）
   if (imageUrls.length > 0) {
     postData.fengmiantu = imageUrls.map(url => ({
       url,
@@ -402,15 +457,47 @@ async function createPost(data, userInfo = null) {
     }));
   }
 
+  // 作者关联字段 - 字段 ID: 69b5db79440840fde2873759
+  // zztx/zznc 是他表字段（Lookup），只读不可写入，会自动从关联的用户表获取
   if (user.id) {
-    postData.author_id = [user.id];
-    postData.zznc = user.nickname || '用户';
-    if (user.avatar) {
-      postData.zztx = [{ url: user.avatar }];
-    }
+    postData['69b5db79440840fde2873759'] = [user.id];
   }
 
+  console.log('[createPost] 发送数据:', postData);
   return createRow(WORKSHEET_ID.posts, postData);
+}
+
+/**
+ * 获取分类字段的 option key
+ * 分类字段 ID: 69b5db79440840fde287375b
+ */
+function getCategoryKey(categoryName) {
+  const categoryKeys = {
+    '赏金任务': '8eb44026-eebe-4677-bc9c-435e972729a6',
+    '问答': '9e5f96d9-6255-4ec5-aef4-4df2f7c0e760',
+    '吐槽': '9646cbb4-2eee-4c91-88ac-b4cdd394be5e',
+    '活动': '09a2a118-7b3a-4886-a460-906a770669a9'
+  };
+  const key = categoryKeys[categoryName];
+  return key ? [key] : [];
+}
+
+/**
+ * 获取任务类型字段的 option key
+ * 任务类型字段 ID: 69b5db79440840fde287375c
+ */
+function getTaskTypeKey(taskTypeName) {
+  const taskTypeKeys = {
+    '一对多': '25e48b7a-16cd-475d-b0fb-f2e538aa9974',
+    '一对一': 'a47135a2-546b-4274-8bf2-b5d5b84b1a7b',
+    '摄影': '151862d5-cf37-4a0d-96d8-c603c2033050',
+    '娱乐': '7ed69cf4-8194-4331-bb66-4fc973776ada',
+    '学习': '40191eef-4548-4f94-8242-74734ef3a459',
+    '运动': '1df9a140-8ce8-4771-8210-ddea617f9baa',
+    '美食': 'b9f8d3b1-19ac-437c-9cd0-1d4f07992c7b'
+  };
+  const key = taskTypeKeys[taskTypeName];
+  return key ? [key] : [];
 }
 
 async function getComments(postId, page = 1, pageSize = 50) {
