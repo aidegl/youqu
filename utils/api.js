@@ -3,7 +3,7 @@ const app = getApp();
 
 // 通用登录 API 配置
 // youqu 独立路径，Nginx 自动加 X-Source: youqu
-const AUTH_API_BASE = 'https://100000whys.cn/youqu/api';
+const AUTH_API_BASE = 'https://100000whys.cn/youqu/api/user';
 
 // HAP 应用配置
 const HAP_CONFIG = {
