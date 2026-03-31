@@ -6,8 +6,9 @@ Page({
   data: {
     userId: '',
     isSelf: false,
+    isFollowing: false,
     userInfo: null,
-    stats: { posts: 0 },
+    stats: { posts: 0, followers: 0, following: 0 },
     currentTab: '赏金任务',
     tabs: ['赏金任务', '问答', '吐槽'],
     posts: [],
@@ -26,13 +27,31 @@ Page({
   },
 
   async loadData() {
-    await Promise.all([this.loadUserInfo(), this.loadPosts()]);
+    await Promise.all([this.loadUserInfo(), this.loadPosts(), this.loadFollowStats()]);
+    // 检查关注状态
+    if (!this.data.isSelf && app.globalData.userInfo) {
+      const res = await api.checkIsFollowing(app.globalData.userInfo.id, this.data.userId);
+      this.setData({ isFollowing: res.isFollowing });
+    }
   },
 
   async loadUserInfo() {
     const res = await api.getUserInfo(this.data.userId);
     if (res.success) {
       this.setData({ userInfo: res.data });
+    }
+  },
+
+  async loadFollowStats() {
+    const res = await api.getFollowStats(this.data.userId);
+    if (res.success) {
+      this.setData({
+        stats: {
+          ...this.data.stats,
+          followers: res.data.followerCount,
+          following: res.data.followingCount
+        }
+      });
     }
   },
 
@@ -44,7 +63,10 @@ Page({
       const allPosts = await api.getUserPosts(this.data.userId);
       this.setData({
         posts: res.data,
-        stats: { posts: allPosts.data?.length || 0 },
+        stats: {
+          ...this.data.stats,
+          posts: allPosts.data?.length || 0
+        },
         loading: false
       });
     } else {
@@ -60,5 +82,40 @@ Page({
 
   goToDetail(e) {
     wx.navigateTo({ url: '/pages/post/post?id=' + e.currentTarget.dataset.id });
+  },
+
+  // 关注/取消关注
+  async toggleFollow() {
+    const userInfo = app.globalData.userInfo;
+    if (!userInfo) {
+      wx.showToast({ title: '请先登录', icon: 'none' });
+      return;
+    }
+
+    if (this.data.isFollowing) {
+      // 取消关注
+      const res = await api.unfollowUser(userInfo.id, this.data.userId);
+      if (res.success) {
+        this.setData({
+          isFollowing: false,
+          'stats.followers': this.data.stats.followers - 1
+        });
+        wx.showToast({ title: '已取消关注' });
+      } else {
+        wx.showToast({ title: res.error_msg || '操作失败', icon: 'none' });
+      }
+    } else {
+      // 关注
+      const res = await api.followUser(userInfo.id, this.data.userId);
+      if (res.success) {
+        this.setData({
+          isFollowing: true,
+          'stats.followers': this.data.stats.followers + 1
+        });
+        wx.showToast({ title: '关注成功' });
+      } else {
+        wx.showToast({ title: res.error_msg || '操作失败', icon: 'none' });
+      }
+    }
   }
 });

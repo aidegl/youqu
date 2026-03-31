@@ -2,7 +2,7 @@
 <view class="container">
   <!-- 用户信息 -->
   <view class="profile-header">
-    <image class="bg" src="https://fp1.mingdaoyun.cn/customIcon/0_lego.svg" mode="aspectFill"></image>
+    <image class="bg" src="/images/𝑺𝒉𝒂𝒓𝒆｜海边背景图🐚_1_关你什么🍅_来自小红书网页版.jpg" mode="aspectFill"></image>
     <view class="user-info">
       <!-- 头像，可点击修改 -->
       <image class="avatar" src="{{userInfo.avatar || 'https://fp1.mingdaoyun.cn/customIcon/0_lego.svg'}}" bindtap="editAvatar"></image>
@@ -16,9 +16,9 @@
   
   <!-- 统计 -->
   <view class="stats">
-    <view class="stat-item"><text class="num">12</text><text class="label">发布</text></view>
-    <view class="stat-item"><text class="num">5</text><text class="label">粉丝</text></view>
-    <view class="stat-item"><text class="num">8</text><text class="label">关注</text></view>
+    <view class="stat-item"><text class="num">{{stats.posts}}</text><text class="label">发布</text></view>
+    <view class="stat-item"><text class="num">{{stats.followers}}</text><text class="label">粉丝</text></view>
+    <view class="stat-item"><text class="num">{{stats.following}}</text><text class="label">关注</text></view>
   </view>
 
   <!-- 菜单 -->
@@ -31,15 +31,9 @@
     <view class="menu-item" bindtap="goToMessages">
       <text class="icon">💬</text>
       <text class="text">我的消息</text>
-      <text class="badge">3</text>
       <text class="arrow">›</text>
     </view>
-    <view class="menu-item">
-      <text class="icon">⭐</text>
-      <text class="text">我的收藏</text>
-      <text class="arrow">›</text>
-    </view>
-    <view class="menu-item">
+    <view class="menu-item" bindtap="goToSettings">
       <text class="icon">⚙️</text>
       <text class="text">设置</text>
       <text class="arrow">›</text>

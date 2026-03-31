@@ -63,10 +63,15 @@
 
 .follow-btn {
   padding: 10rpx 30rpx;
-  border: 1rpx solid #3054EB;
-  color: #3054EB;
+  border: 1rpx solid #FF9800;
+  color: #FF9800;
   border-radius: 30rpx;
   font-size: 26rpx;
+}
+
+.follow-btn.following {
+  border-color: #999;
+  color: #999;
 }
 
 .post-body {

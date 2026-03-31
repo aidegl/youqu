@@ -20,6 +20,7 @@ const WORKSHEET_ID = {
   follows: '69cac8d9f045950b8025e43a',  // 关注表
   messages: '69b5dbb4724cbbeab6557d8b',
   task_takers: '69b5dc137e3c8fc03e16dc99',
+  chat_messages: '69cb1737255f5b2b932010de',  // 聊天消息表
   banners: '69b5dc147e3c8fc03e16dcab'  // 轮播图
 };
 
@@ -96,7 +97,7 @@ async function createRow(worksheetId, data, triggerWorkflow = true) {
  */
 async function updateRow(worksheetId, rowId, data, triggerWorkflow = true) {
   const fields = Object.entries(data).map(([id, value]) => ({ id, value }));
-  return request(`/v3/app/worksheets/${worksheetId}/rows/${rowId}`, 'PUT', { fields, triggerWorkflow });
+  return request(`/v3/app/worksheets/${worksheetId}/rows/${rowId}`, 'PATCH', { fields, triggerWorkflow });
 }
 
 /**
@@ -105,6 +106,48 @@ async function updateRow(worksheetId, rowId, data, triggerWorkflow = true) {
 function formatOption(field) {
   if (!field || !Array.isArray(field) || field.length === 0) return '';
   return field[0]?.value || '';
+}
+
+/**
+ * 解析头像字段
+ * 支持多种格式：
+ * 1. 直接 URL 字符串
+ * 2. 字符串格式的 JSON 数组 '[{"large_thumbnail_full_path":"..."}]'
+ * 3. 对象数组 [{"large_thumbnail_full_path":"..."}]
+ */
+function parseAvatar(avatarField) {
+  if (!avatarField) {
+    return 'https://fp1.mingdaoyun.cn/customIcon/0_lego.svg';
+  }
+
+  // 如果是对象数组
+  if (Array.isArray(avatarField) && avatarField.length > 0) {
+    const first = avatarField[0];
+    if (typeof first === 'object') {
+      return first.large_thumbnail_full_path || first.downloadUrl || first.url || 'https://fp1.mingdaoyun.cn/customIcon/0_lego.svg';
+    }
+  }
+
+  // 如果是字符串
+  if (typeof avatarField === 'string') {
+    // 尝试解析为 JSON 数组
+    if (avatarField.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(avatarField);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed[0].large_thumbnail_full_path || parsed[0].downloadUrl || parsed[0].url || 'https://fp1.mingdaoyun.cn/customIcon/0_lego.svg';
+        }
+      } catch (e) {
+        // 解析失败，当作普通 URL
+      }
+    }
+    // 普通 URL 字符串
+    if (avatarField.startsWith('http')) {
+      return avatarField;
+    }
+  }
+
+  return 'https://fp1.mingdaoyun.cn/customIcon/0_lego.svg';
 }
 
 /**
@@ -172,21 +215,8 @@ function formatPost(row) {
     authorNickname = typeof row.zznc === 'string' ? row.zznc : (row.zznc[0]?.value || '未知');
   }
 
-  // 头像从 zztx 获取（他表字段，可能是字符串URL或对象数组）
-  if (row.zztx) {
-    if (typeof row.zztx === 'string') {
-      // 文本类型，直接是 URL
-      authorAvatar = row.zztx;
-    } else if (Array.isArray(row.zztx) && row.zztx.length > 0) {
-      // 附件类型，取 downloadUrl
-      const avatarImg = row.zztx[0];
-      if (typeof avatarImg === 'object') {
-        authorAvatar = avatarImg.downloadUrl || avatarImg.url || avatarImg.large_thumbnail_full_path || '';
-      } else if (typeof avatarImg === 'string') {
-        authorAvatar = avatarImg;
-      }
-    }
-  }
+  // 头像从 zztx 获取（他表字段，使用 parseAvatar 解析）
+  authorAvatar = parseAvatar(row.zztx);
 
   // 作者 ID 从作者关联字段获取（字段 ID: 69b5db79440840fde2873759）
   const authorField = row['69b5db79440840fde2873759'];
@@ -233,19 +263,29 @@ function formatPost(row) {
 /**
  * 格式化评论
  */
+/**
+ * 格式化评论
+ * 评论表字段 ID：
+ * - 帖子ID: 69b5dbc4947a225402a9097d
+ * - 评论者: 69b5dbc4947a225402a9097f
+ * - 评论内容: 69b5dbc4947a225402a90981
+ * - 点赞数: 69b5dbc4947a225402a90982
+ * - 评论时间: 69b5dbc4947a225402a90984
+ * - 父评论: 69b5dbceba48d7134c7ac35e
+ */
 function formatComment(row) {
   return {
-    id: row.rowid,
-    post_id: row.post_id?.[0]?.sid || '',
+    id: row.rowid || row.rowId,
+    post_id: row['69b5dbc4947a225402a9097d']?.[0]?.sid || '',
     author: {
-      id: row.author_id?.[0]?.sid || '',
-      nickname: row.author_id?.[0]?.name || '未知',
+      id: row['69b5dbc4947a225402a9097f']?.[0]?.sid || '',
+      nickname: row['69b5dbc4947a225402a9097f']?.[0]?.name || '未知',
       avatar: 'https://fp1.mingdaoyun.cn/customIcon/0_lego.svg'
     },
-    content: row.content || '',
-    parent_id: row.parent_id?.[0]?.sid || '',
-    likes_count: parseInt(row.likes_count) || 0,
-    created_at: formatTime(row.created_at)
+    content: row['69b5dbc4947a225402a90981'] || '',
+    parent_id: row['69b5dbceba48d7134c7ac35e']?.[0]?.sid || '',
+    likes_count: parseInt(row['69b5dbc4947a225402a90982']) || 0,
+    created_at: formatTime(row['69b5dbc4947a225402a90984'])
   };
 }
 
@@ -510,11 +550,21 @@ function getTaskTypeKey(taskTypeName) {
 }
 
 async function getComments(postId, page = 1, pageSize = 50) {
+  // 评论表字段 ID：帖子ID = 69b5dbc4947a225402a9097d
   const result = await getRows(WORKSHEET_ID.comments, {
-    filter: { type: 'group', logic: 'AND', children: [{ type: 'condition', field: 'post_id', operator: 'belongsto', value: [postId] }] },
+    filter: {
+      type: 'group',
+      logic: 'AND',
+      children: [{
+        type: 'condition',
+        field: '69b5dbc4947a225402a9097d',  // 帖子ID 字段
+        operator: 'belongsto',
+        value: [postId]
+      }]
+    },
     pageIndex: page,
     pageSize,
-    sorts: [{ field: 'created_at', isAsc: true }]
+    sorts: [{ field: '69b5dbc4947a225402a90984', isAsc: true }]  // 评论时间字段
   });
   if (result.success && result.data?.rows) {
     return { success: true, data: result.data.rows.map(formatComment) };
@@ -526,21 +576,28 @@ async function addComment(data) {
   const app = getApp();
   const userInfo = app?.globalData?.userInfo || {};
 
-  // 评论数据 - 需要评论表的字段 ID
+  // 评论表字段 ID：
+  // - 帖子ID: 69b5dbc4947a225402a9097d
+  // - 评论者: 69b5dbc4947a225402a9097f
+  // - 评论内容: 69b5dbc4947a225402a90981
+  // - 点赞数: 69b5dbc4947a225402a90982
+  // - 评论时间: 69b5dbc4947a225402a90984
+  // - 父评论: 69b5dbceba48d7134c7ac35e
   const commentData = {
-    post_id: [data.post_id],
-    content: data.content,
-    likes_count: 0,
-    created_at: new Date().toISOString()
+    '69b5dbc4947a225402a9097d': [data.post_id],      // 帖子ID
+    '69b5dbc4947a225402a90981': data.content,        // 评论内容
+    '69b5dbc4947a225402a90982': 0,                   // 点赞数
+    '69b5dbc4947a225402a90984': new Date().toISOString()  // 评论时间
   };
 
-  // 作者关联 - 使用 userInfo.id (HAP 用户记录 ID)
+  // 评论者关联
   if (userInfo.id) {
-    commentData.author_id = [userInfo.id];
+    commentData['69b5dbc4947a225402a9097f'] = [userInfo.id];
   }
 
+  // 父评论
   if (data.parent_id) {
-    commentData.parent_id = [data.parent_id];
+    commentData['69b5dbceba48d7134c7ac35e'] = [data.parent_id];
   }
 
   const result = await createRow(WORKSHEET_ID.comments, commentData);
@@ -704,7 +761,7 @@ async function getOrCreateUser(openid, userInfo = {}) {
         id: rowId,
         openid: openid,
         nickname: user['69b5db58a606df9d8178a040'] || userInfo.nickname || '用户',
-        avatar: user['69b5db58a606df9d8178a041'] || userInfo.avatar || 'https://fp1.mingdaoyun.cn/customIcon/0_lego.svg'
+        avatar: parseAvatar(user['69c527ef867350d552fb710f']) || userInfo.avatar || 'https://fp1.mingdaoyun.cn/customIcon/0_lego.svg'
       }
     };
   }
@@ -744,7 +801,16 @@ async function getOrCreateUser(openid, userInfo = {}) {
 async function getUserInfo(userId) {
   const result = await getRow(WORKSHEET_ID.users, userId);
   if (result.success && result.data) {
-    return { success: true, data: { id: result.data.rowid, openid: result.data.openid, nickname: result.data.nickname || '用户', avatar: result.data.avatar || 'https://fp1.mingdaoyun.cn/customIcon/0_lego.svg', student_id: result.data.student_id || '', phone: result.data.phone || '' } };
+    return {
+      success: true,
+      data: {
+        id: result.data.rowid || result.data.rowId,
+        openid: result.data['69b5db58a606df9d8178a03e'] || '',
+        nickname: result.data['69b5db58a606df9d8178a040'] || '用户',
+        avatar: parseAvatar(result.data['69c527ef867350d552fb710f']),
+        phone: result.data['69b5db58a606df9d8178a043'] || ''
+      }
+    };
   }
   return { success: false, data: null };
 }
@@ -867,28 +933,196 @@ async function takeTask(postId, takerId) {
   const post = await getRow(WORKSHEET_ID.posts, postId);
   if (!post.success) return { success: false, error_msg: '任务不存在' };
 
+  // 任务接取表字段 ID：
+  // - 任务: 69b5dc13401e6eb020edf41f
+  // - 发布者: 69b5dc13401e6eb020edf421
+  // - 接取者: 69b5dc13401e6eb020edf423
+  // - 状态: 69b5dc13401e6eb020edf425
+  // - 接取时间: 69b5dc13401e6eb020edf428
+
+  // 获取作者 ID
+  const authorId = post.data['69b5db79440840fde2873759']?.[0]?.sid || '';
+
   const result = await createRow(WORKSHEET_ID.task_takers, {
-    post_id: [postId],
-    owner_id: post.data.author_id || [],
-    taker_id: [takerId],
-    status: '进行中',
-    created_at: new Date().toISOString()
+    '69b5dc13401e6eb020edf41f': [postId],        // 任务
+    '69b5dc13401e6eb020edf421': authorId ? [authorId] : [],  // 发布者
+    '69b5dc13401e6eb020edf423': [takerId],       // 接取者
+    '69b5dc13401e6eb020edf428': new Date().toISOString()  // 接取时间
   });
 
-  if (result.success && post.data.author_id) {
+  // 创建任务对话，发送欢迎消息
+  if (result.success && authorId) {
+    const taskTakerId = result.data.rowid;
+
+    // 发送欢迎消息（发布者发给接取者）
+    await sendChatMessage(taskTakerId, authorId, takerId, '感谢领取任务，有任务不清楚的地方可以问我~');
+
+    // 同时发送系统通知
     const user = await getUserInfo(takerId);
+    const postTitle = post.data['69b5db79440840fde2873756'] || post.data.title || '无标题';
+
+    // 消息表字段 ID：
+    // - 接收者: 69b5dbb5b73fe81519fbdcd5
+    // - 发送者: 69b5dbb5b73fe81519fbdcd7
+    // - 消息类型: 69b5dbb5b73fe81519fbdcd9
+    // - 标题: 69b5dbb5b73fe81519fbdcda
+    // - 内容: 69b5dbb5b73fe81519fbdcdb
+    // - 相关帖子: 69b5dbb5b73fe81519fbdcdc
+    // - 是否已读: 69b5dbb5b73fe81519fbdcde
+    // - 消息时间: 69b5dbb5b73fe81519fbdcdf
+
     await createRow(WORKSHEET_ID.messages, {
-      receiver_id: post.data.author_id,
-      sender_id: [takerId],
-      type: '通知',
-      title: '有人接取了你的任务',
-      content: `${user.data?.nickname || '未知'} 接取了你的任务：${post.data.title || '无标题'}`,
-      related_post_id: [postId],
-      is_read: '否',
-      created_at: new Date().toISOString()
+      '69b5dbb5b73fe81519fbdcd5': [authorId],  // 接收者
+      '69b5dbb5b73fe81519fbdcd7': [takerId],  // 发送者
+      '69b5dbb5b73fe81519fbdcda': '有人接取了你的任务',  // 标题
+      '69b5dbb5b73fe81519fbdcdb': `${user.data?.nickname || '未知'} 接取了你的任务：${postTitle}`,  // 内容
+      '69b5dbb5b73fe81519fbdcdc': [postId],   // 相关帖子
+      '69b5dbb5b73fe81519fbdcdf': new Date().toISOString()  // 消息时间
     });
   }
   return result;
+}
+
+/**
+ * 发送聊天消息
+ * 聊天消息表字段 ID：
+ * - 任务: 69cb1737d128aadb0c7d2eda
+ * - 发送者: 69cb1737d128aadb0c7d2edc
+ * - 接收者: 69cb1737d128aadb0c7d2ede
+ * - 消息内容: 69cb1737d128aadb0c7d2ee0
+ * - 发送时间: 69cb1737d128aadb0c7d2ee1
+ */
+async function sendChatMessage(taskTakerId, senderId, receiverId, content) {
+  return createRow(WORKSHEET_ID.chat_messages, {
+    '69cb1737d128aadb0c7d2eda': [taskTakerId],   // 任务
+    '69cb1737d128aadb0c7d2edc': [senderId],      // 发送者
+    '69cb1737d128aadb0c7d2ede': [receiverId],    // 接收者
+    '69cb1737d128aadb0c7d2ee0': content,         // 消息内容
+    '69cb1737d128aadb0c7d2ee1': new Date().toISOString()  // 发送时间
+  });
+}
+
+/**
+ * 获取任务对话消息列表
+ * @param {string} taskTakerId - 任务接取记录ID
+ */
+async function getChatMessages(taskTakerId) {
+  const result = await getRows(WORKSHEET_ID.chat_messages, {
+    filter: {
+      type: 'group',
+      logic: 'AND',
+      children: [{
+        type: 'condition',
+        field: '69cb1737d128aadb0c7d2eda',
+        operator: 'belongsto',
+        value: [taskTakerId]
+      }]
+    },
+    pageIndex: 1,
+    pageSize: 100,
+    sorts: [{ field: '69cb1737d128aadb0c7d2ee1', isAsc: true }]
+  });
+
+  if (result.success && result.data?.rows) {
+    const messages = result.data.rows.map(row => ({
+      id: row.rowid || row.rowId,
+      sender: {
+        id: row['69cb1737d128aadb0c7d2edc']?.[0]?.sid || '',
+        nickname: row['69cb1737d128aadb0c7d2edc']?.[0]?.name || '未知'
+      },
+      receiver: {
+        id: row['69cb1737d128aadb0c7d2ede']?.[0]?.sid || '',
+        nickname: row['69cb1737d128aadb0c7d2ede']?.[0]?.name || '未知'
+      },
+      content: row['69cb1737d128aadb0c7d2ee0'] || '',
+      created_at: formatTime(row['69cb1737d128aadb0c7d2ee1'])
+    }));
+    return { success: true, data: messages };
+  }
+  return { success: false, data: [] };
+}
+
+/**
+ * 获取用户的任务对话列表
+ * @param {string} userId - 用户ID
+ */
+async function getTaskConversations(userId) {
+  // 查询用户参与的接取任务（作为发布者或接取者）
+  const asOwner = await getRows(WORKSHEET_ID.task_takers, {
+    filter: {
+      type: 'group',
+      logic: 'AND',
+      children: [{
+        type: 'condition',
+        field: '69b5dc13401e6eb020edf421',  // 发布者
+        operator: 'belongsto',
+        value: [userId]
+      }]
+    },
+    pageIndex: 1,
+    pageSize: 50,
+    sorts: [{ field: '69b5dc13401e6eb020edf428', isAsc: false }]
+  });
+
+  const asTaker = await getRows(WORKSHEET_ID.task_takers, {
+    filter: {
+      type: 'group',
+      logic: 'AND',
+      children: [{
+        type: 'condition',
+        field: '69b5dc13401e6eb020edf423',  // 接取者
+        operator: 'belongsto',
+        value: [userId]
+      }]
+    },
+    pageIndex: 1,
+    pageSize: 50,
+    sorts: [{ field: '69b5dc13401e6eb020edf428', isAsc: false }]
+  });
+
+  const conversations = [];
+
+  // 处理作为发布者的任务
+  if (asOwner.success && asOwner.data?.rows) {
+    for (const row of asOwner.data.rows) {
+      const postId = row['69b5dc13401e6eb020edf41f']?.[0]?.sid;
+      const takerId = row['69b5dc13401e6eb020edf423']?.[0]?.sid;
+      const takerName = row['69b5dc13401e6eb020edf423']?.[0]?.name || '未知';
+      const postTitle = row['69b5dc13401e6eb020edf41f']?.[0]?.name || '任务';
+
+      conversations.push({
+        id: row.rowid || row.rowId,
+        taskId: row.rowid || row.rowId,
+        postId,
+        postTitle,
+        otherUser: { id: takerId, nickname: takerName },
+        isOwner: true,
+        created_at: formatTime(row['69b5dc13401e6eb020edf428'])
+      });
+    }
+  }
+
+  // 处理作为接取者的任务
+  if (asTaker.success && asTaker.data?.rows) {
+    for (const row of asTaker.data.rows) {
+      const postId = row['69b5dc13401e6eb020edf41f']?.[0]?.sid;
+      const ownerId = row['69b5dc13401e6eb020edf421']?.[0]?.sid;
+      const ownerName = row['69b5dc13401e6eb020edf421']?.[0]?.name || '未知';
+      const postTitle = row['69b5dc13401e6eb020edf41f']?.[0]?.name || '任务';
+
+      conversations.push({
+        id: row.rowid || row.rowId,
+        taskId: row.rowid || row.rowId,
+        postId,
+        postTitle,
+        otherUser: { id: ownerId, nickname: ownerName },
+        isOwner: false,
+        created_at: formatTime(row['69b5dc13401e6eb020edf428'])
+      });
+    }
+  }
+
+  return { success: true, data: conversations };
 }
 
 /**
@@ -897,6 +1131,8 @@ async function takeTask(postId, takerId) {
  * @param {string} followingId - 被关注人ID
  */
 async function followUser(followerId, followingId) {
+  console.log('[followUser] 关注人:', followerId, '被关注人:', followingId);
+
   if (followerId === followingId) {
     return { success: false, error_msg: '不能关注自己' };
   }
@@ -916,15 +1152,24 @@ async function followUser(followerId, followingId) {
     pageSize: 1
   });
 
+  console.log('[followUser] 检查已关注结果:', existing);
+
   if (existing.success && existing.data?.rows?.length > 0) {
     return { success: false, error_msg: '已经关注过了' };
   }
 
-  return createRow(WORKSHEET_ID.follows, {
+  // 创建关注记录
+  const followData = {
     '69cac8d9d128aadb0c7a7bbc': [followerId],      // 关注人
     '69cac8d9d128aadb0c7a7bbe': [followingId],    // 被关注人
     '69cac8d9d128aadb0c7a7bc0': new Date().toISOString()  // 关注时间
-  });
+  };
+  console.log('[followUser] 创建关注记录:', followData);
+
+  const result = await createRow(WORKSHEET_ID.follows, followData);
+  console.log('[followUser] 创建结果:', result);
+
+  return result;
 }
 
 /**
@@ -1095,5 +1340,6 @@ module.exports = {
   getMessages, getBanners, markMessageRead, takeTask,
   uploadImageToTemp, uploadImagesToTemp,
   followUser, unfollowUser, checkIsFollowing, getFollowingList, getFollowerList, getFollowStats,
+  sendChatMessage, getChatMessages, getTaskConversations,
   WORKSHEET_ID, HAP_CONFIG
 };

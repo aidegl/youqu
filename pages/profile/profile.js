@@ -7,8 +7,8 @@ Page({
     userInfo: null,
     stats: {
       posts: 0,
-      tasks: 0,
-      messages: 0
+      followers: 0,
+      following: 0
     }
   },
 
@@ -20,27 +20,16 @@ Page({
     this.setData({ userInfo: app.globalData.userInfo });
 
     if (app.globalData.userInfo?.id) {
-      const [postsRes, tasksRes, messagesRes] = await Promise.all([
+      const [postsRes, followStatsRes] = await Promise.all([
         api.getUserPosts(app.globalData.userInfo.id),
-        api.getRows(api.WORKSHEET_ID.task_takers, {
-          filter: {
-            type: 'group',
-            logic: 'OR',
-            children: [
-              { type: 'condition', field: 'owner_id', operator: 'belongsto', value: [app.globalData.userInfo.id] },
-              { type: 'condition', field: 'taker_id', operator: 'belongsto', value: [app.globalData.userInfo.id] }
-            ]
-          },
-          pageSize: 1
-        }),
-        api.getMessages(app.globalData.userInfo.id)
+        api.getFollowStats(app.globalData.userInfo.id)
       ]);
 
       this.setData({
         stats: {
           posts: postsRes.data?.length || 0,
-          tasks: tasksRes.data?.total || 0,
-          messages: messagesRes.data?.filter(m => !m.is_read).length || 0
+          followers: followStatsRes.data?.followerCount || 0,
+          following: followStatsRes.data?.followingCount || 0
         }
       });
     }

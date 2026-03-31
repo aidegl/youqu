@@ -4,19 +4,23 @@ const app = getApp();
 
 Page({
   data: {
-    currentTab: '',
+    currentTab: 'task',
     messages: [],
+    taskConversations: [],
     loading: false
   },
 
   onShow() {
     this.loadMessages();
+    this.loadTaskConversations();
   },
 
   switchTab(e) {
     const tab = e.currentTarget.dataset.tab;
-    this.setData({ currentTab: tab === 'all' ? '' : tab });
-    this.loadMessages();
+    this.setData({ currentTab: tab });
+    if (tab !== 'task') {
+      this.loadMessages();
+    }
   },
 
   async loadMessages() {
@@ -36,22 +40,42 @@ Page({
     }
   },
 
-  async goToDetail(e) {
-    const msg = e.currentTarget.dataset.msg;
-
-    // 标记已读
-    if (!msg.is_read) {
-      await api.markMessageRead(msg.id);
+  async loadTaskConversations() {
+    const userInfo = app.globalData.userInfo;
+    if (!userInfo) {
+      this.setData({ taskConversations: [] });
+      return;
     }
 
-    // 根据消息类型跳转
-    if (msg.related_post_id) {
-      wx.navigateTo({ url: `/pages/post/post?id=${msg.related_post_id}` });
+    const res = await api.getTaskConversations(userInfo.id);
+    if (res.success) {
+      this.setData({ taskConversations: res.data });
     }
   },
 
+  async goToDetail(e) {
+    const item = e.currentTarget.dataset.item;
+
+    // 标记已读
+    if (!item.is_read) {
+      await api.markMessageRead(item.id);
+    }
+
+    // 根据消息类型跳转
+    if (item.related_post_id) {
+      wx.navigateTo({ url: `/pages/post/post?id=${item.related_post_id}` });
+    }
+  },
+
+  goToChat(e) {
+    const item = e.currentTarget.dataset.item;
+    wx.navigateTo({
+      url: `/pages/chat/chat?taskId=${item.taskId}&postId=${item.postId}&otherUserId=${item.otherUser.id}`
+    });
+  },
+
   async onPullDownRefresh() {
-    await this.loadMessages();
+    await Promise.all([this.loadMessages(), this.loadTaskConversations()]);
     wx.stopPullDownRefresh();
   }
 });

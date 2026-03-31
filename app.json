@@ -6,6 +6,7 @@
     "pages/profile/profile",
     "pages/profile-space/profile-space",
     "pages/messages/messages",
+    "pages/chat/chat",
     "pages/task/task",
     "pages/activities/activities"
   ],

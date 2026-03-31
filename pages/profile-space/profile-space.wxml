@@ -2,7 +2,7 @@
 <view class="container">
   <!-- 用户信息头部 -->
   <view class="space-header">
-    <image class="cover" src="https://fp1.mingdaoyun.cn/customIcon/0_lego.svg"></image>
+    <image class="cover" src="/images/𝑺𝒉𝒂𝒓𝒆｜海边背景图🐚_1_关你什么🍅_来自小红书网页版.jpg"></image>
     <view class="user-section">
       <image class="avatar" src="{{userInfo.avatar}}"></image>
       <text class="nickname">{{userInfo.nickname}}</text>
@@ -10,6 +10,9 @@
         <view class="stat"><text class="num">{{stats.posts}}</text><text>发布</text></view>
         <view class="stat"><text class="num">{{stats.followers}}</text><text>粉丝</text></view>
         <view class="stat"><text class="num">{{stats.following}}</text><text>关注</text></view>
+      </view>
+      <view class="follow-btn {{isFollowing ? 'following' : ''}}" wx:if="{{!isSelf}}" bindtap="toggleFollow">
+        {{isFollowing ? '已关注' : '关注'}}
       </view>
     </view>
   </view>

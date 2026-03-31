@@ -1,0 +1,43 @@
+<!--pages/chat/chat.wxml-->
+<view class="container">
+  <!-- 任务信息 -->
+  <view class="task-info" bindtap="goToPost">
+    <text class="task-title">{{taskInfo.title}}</text>
+    <text class="task-status">{{taskInfo.status}}</text>
+  </view>
+
+  <!-- 聊天消息列表 -->
+  <scroll-view class="message-list" scroll-y scroll-into-view="{{scrollToView}}">
+    <view class="message-item {{item.isSelf ? 'self' : 'other'}}" wx:for="{{messages}}" wx:key="id" id="msg-{{index}}">
+      <!-- 对方消息：头像在左边 -->
+      <image wx:if="{{!item.isSelf}}" class="msg-avatar" src="https://fp1.mingdaoyun.cn/customIcon/0_lego.svg"></image>
+
+      <view class="msg-content-wrap">
+        <view class="message-bubble">
+          <text class="message-content">{{item.content}}</text>
+        </view>
+        <text class="message-time">{{item.created_at}}</text>
+      </view>
+
+      <!-- 自己的消息：头像在右边 -->
+      <image wx:if="{{item.isSelf}}" class="msg-avatar" src="{{userInfo.avatar || 'https://fp1.mingdaoyun.cn/customIcon/0_lego.svg'}}"></image>
+    </view>
+
+    <view class="empty" wx:if="{{messages.length === 0}}">
+      <text>暂无消息</text>
+    </view>
+  </scroll-view>
+
+  <!-- 底部输入框 -->
+  <view class="input-box">
+    <input
+      class="message-input"
+      placeholder="输入消息..."
+      bindinput="onInput"
+      value="{{inputText}}"
+      confirm-type="send"
+      bindconfirm="sendMessage"
+    />
+    <button class="send-btn" bindtap="sendMessage">发送</button>
+  </view>
+</view>

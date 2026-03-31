@@ -221,5 +221,21 @@ Page({
     this.setData({ page: 1, hasMore: true, posts: [] });
     await Promise.all([this.loadBanners(), this.loadPosts()]);
     wx.stopPullDownRefresh();
+  },
+
+  // 分享
+  onShareAppMessage() {
+    return {
+      title: '友趣 - 校园社区',
+      path: '/pages/index/index'
+    };
+  },
+
+  // 分享到朋友圈
+  onShareTimeline() {
+    return {
+      title: '友趣 - 校园社区',
+      query: ''
+    };
   }
 });

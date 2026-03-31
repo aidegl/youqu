@@ -17,12 +17,14 @@
     
     <!-- 用户信息 -->
     <view class="post-header">
-      <image class="author-avatar" src="{{post.author.avatar}}"></image>
-      <view class="author-info">
+      <image class="author-avatar" src="{{post.author.avatar}}" bindtap="goToUserSpace" data-id="{{post.author.id}}"></image>
+      <view class="author-info" bindtap="goToUserSpace" data-id="{{post.author.id}}">
         <text class="author-name">{{post.author.nickname}}</text>
         <text class="post-time">{{post.created_at}}</text>
       </view>
-      <view class="follow-btn" wx:if="{{!isOwner}}">关注</view>
+      <view class="follow-btn {{isFollowing ? 'following' : ''}}" wx:if="{{!isOwner}}" bindtap="toggleFollow">
+        {{isFollowing ? '已关注' : '关注'}}
+      </view>
     </view>
 
     <!-- 悬赏信息 -->
@@ -64,7 +66,7 @@
           </view>
           <text class="comment-content">{{item.content}}</text>
           <view class="comment-actions">
-            <text class="action" bindtap="replyComment" data-id="{{item.id}}">回复</text>
+            <text class="action" bindtap="replyComment" data-id="{{item.id}}" data-nickname="{{item.author.nickname}}">回复</text>
             <text class="action" bindtap="likeComment" data-id="{{item.id}}">赞 {{item.likes_count}}</text>
           </view>
         </view>
