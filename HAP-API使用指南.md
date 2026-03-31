@@ -33,7 +33,7 @@ const WORKSHEET_ID = {
   follows: '69cac8d9f045950b8025e43a',    // 关注表
   messages: '69b5dbb4724cbbeab6557d8b',   // 消息表
   task_takers: '69b5dc137e3c8fc03e16dc99', // 任务接取表
-  chat_messages: '69cb1737255f5b2b932010de', // 聊天消息表
+  chat_messages: '69cb54c92a26454c6e33ecc4', // 聊天消息表
   banners: '69b5dc147e3c8fc03e16dcab'     // 轮播图表
 };
 ```
@@ -119,11 +119,11 @@ const WORKSHEET_ID = {
 **聊天消息表 (chat_messages)**
 | 字段名 | 字段 ID | 类型 |
 |-------|---------|------|
-| 任务 | `69cb1737d128aadb0c7d2eda` | 关联(任务接取表) |
-| 发送者 | `69cb1737d128aadb0c7d2edc` | 关联(用户) |
-| 接收者 | `69cb1737d128aadb0c7d2ede` | 关联(用户) |
-| 消息内容 | `69cb1737d128aadb0c7d2ee0` | 文本 |
-| 发送时间 | `69cb1737d128aadb0c7d2ee1` | 日期时间 |
+| 任务 | `69cb54c9075399e7d17c705e` | 关联(任务接取表) |
+| 发送者 | `69cb54c9075399e7d17c7060` | 关联(用户) |
+| 接收者 | `69cb54c9075399e7d17c7062` | 关联(用户) |
+| 消息内容 | `69cb54c9075399e7d17c7064` | 文本 |
+| 发送时间 | `69cb54c9075399e7d17c7065` | 日期时间 |
 
 ---
 

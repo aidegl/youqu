@@ -20,7 +20,7 @@ const WORKSHEET_ID = {
   follows: '69cac8d9f045950b8025e43a',  // 关注表
   messages: '69b5dbb4724cbbeab6557d8b',
   task_takers: '69b5dc137e3c8fc03e16dc99',
-  chat_messages: '69cb1737255f5b2b932010de',  // 聊天消息表
+  chat_messages: '69cb54c92a26454c6e33ecc4',  // 聊天消息表
   banners: '69b5dc147e3c8fc03e16dcab'  // 轮播图
 };
 
@@ -986,19 +986,19 @@ async function takeTask(postId, takerId) {
 /**
  * 发送聊天消息
  * 聊天消息表字段 ID：
- * - 任务: 69cb1737d128aadb0c7d2eda
- * - 发送者: 69cb1737d128aadb0c7d2edc
- * - 接收者: 69cb1737d128aadb0c7d2ede
- * - 消息内容: 69cb1737d128aadb0c7d2ee0
- * - 发送时间: 69cb1737d128aadb0c7d2ee1
+ * - 任务: 69cb54c9075399e7d17c705e
+ * - 发送者: 69cb54c9075399e7d17c7060
+ * - 接收者: 69cb54c9075399e7d17c7062
+ * - 消息内容: 69cb54c9075399e7d17c7064
+ * - 发送时间: 69cb54c9075399e7d17c7065
  */
 async function sendChatMessage(taskTakerId, senderId, receiverId, content) {
   return createRow(WORKSHEET_ID.chat_messages, {
-    '69cb1737d128aadb0c7d2eda': [taskTakerId],   // 任务
-    '69cb1737d128aadb0c7d2edc': [senderId],      // 发送者
-    '69cb1737d128aadb0c7d2ede': [receiverId],    // 接收者
-    '69cb1737d128aadb0c7d2ee0': content,         // 消息内容
-    '69cb1737d128aadb0c7d2ee1': new Date().toISOString()  // 发送时间
+    '69cb54c9075399e7d17c705e': [taskTakerId],   // 任务
+    '69cb54c9075399e7d17c7060': [senderId],      // 发送者
+    '69cb54c9075399e7d17c7062': [receiverId],    // 接收者
+    '69cb54c9075399e7d17c7064': content,         // 消息内容
+    '69cb54c9075399e7d17c7065': new Date().toISOString()  // 发送时间
   });
 }
 
@@ -1013,29 +1013,29 @@ async function getChatMessages(taskTakerId) {
       logic: 'AND',
       children: [{
         type: 'condition',
-        field: '69cb1737d128aadb0c7d2eda',
+        field: '69cb54c9075399e7d17c705e',
         operator: 'belongsto',
         value: [taskTakerId]
       }]
     },
     pageIndex: 1,
     pageSize: 100,
-    sorts: [{ field: '69cb1737d128aadb0c7d2ee1', isAsc: true }]
+    sorts: [{ field: '69cb54c9075399e7d17c7065', isAsc: true }]
   });
 
   if (result.success && result.data?.rows) {
     const messages = result.data.rows.map(row => ({
       id: row.rowid || row.rowId,
       sender: {
-        id: row['69cb1737d128aadb0c7d2edc']?.[0]?.sid || '',
-        nickname: row['69cb1737d128aadb0c7d2edc']?.[0]?.name || '未知'
+        id: row['69cb54c9075399e7d17c7060']?.[0]?.sid || '',
+        nickname: row['69cb54c9075399e7d17c7060']?.[0]?.name || '未知'
       },
       receiver: {
-        id: row['69cb1737d128aadb0c7d2ede']?.[0]?.sid || '',
-        nickname: row['69cb1737d128aadb0c7d2ede']?.[0]?.name || '未知'
+        id: row['69cb54c9075399e7d17c7062']?.[0]?.sid || '',
+        nickname: row['69cb54c9075399e7d17c7062']?.[0]?.name || '未知'
       },
-      content: row['69cb1737d128aadb0c7d2ee0'] || '',
-      created_at: formatTime(row['69cb1737d128aadb0c7d2ee1'])
+      content: row['69cb54c9075399e7d17c7064'] || '',
+      created_at: formatTime(row['69cb54c9075399e7d17c7065'])
     }));
     return { success: true, data: messages };
   }
