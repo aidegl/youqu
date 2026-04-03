@@ -57,40 +57,44 @@ Page({
       await this.login();
       return;
     }
-    
+
     wx.chooseMedia({
       count: 1,
       mediaType: ['image'],
       sourceType: ['album', 'camera'],
       success: async (res) => {
         const tempFilePath = res.tempFiles[0].tempFilePath;
-        
+
         wx.showLoading({ title: '上传中...' });
-        
-        // 上传头像到 HAP（需要实现上传接口）
-        // 这里暂时使用临时路径显示
-        const newAvatar = tempFilePath;
-        
-        // 更新本地用户信息
-        const userInfo = {
-          ...this.data.userInfo,
-          avatar: newAvatar
-        };
-        
-        // 更新到 HAP
-        if (userInfo.id) {
-          await api.updateRow(api.WORKSHEET_ID.users, userInfo.id, {
-            avatar: newAvatar
+
+        try {
+          // 1. 上传图片到临时服务器，获取永久 URL
+          const imageUrl = await api.uploadImageToTemp(tempFilePath);
+          console.log('[editAvatar] 上传成功，URL:', imageUrl);
+
+          // 2. 更新到 HAP（使用附件字段 ID: 69c527ef867350d552fb710f）
+          await api.updateRow(api.WORKSHEET_ID.users, this.data.userInfo.id, {
+            '69c527ef867350d552fb710f': [{ url: imageUrl, name: 'avatar.jpg' }]
           });
+
+          // 3. 更新本地用户信息
+          const userInfo = {
+            ...this.data.userInfo,
+            avatar: imageUrl
+          };
+
+          // 4. 更新全局和本地存储
+          app.globalData.userInfo = userInfo;
+          wx.setStorageSync('userInfo', userInfo);
+
+          wx.hideLoading();
+          this.setData({ userInfo });
+          wx.showToast({ title: '头像已更新', icon: 'success' });
+        } catch (e) {
+          wx.hideLoading();
+          console.error('[editAvatar] 上传失败:', e);
+          wx.showToast({ title: '上传失败', icon: 'none' });
         }
-        
-        // 更新全局和本地
-        app.globalData.userInfo = userInfo;
-        wx.setStorageSync('userInfo', userInfo);
-        
-        wx.hideLoading();
-        this.setData({ userInfo });
-        wx.showToast({ title: '头像已更新', icon: 'success' });
       }
     });
   },
@@ -143,6 +147,10 @@ Page({
 
   goToMyPosts() {
     wx.navigateTo({ url: '/pages/profile-space/profile-space?id=self' });
+  },
+
+  goToAlbum() {
+    wx.navigateTo({ url: '/pages/album/album' });
   },
 
   goToMessages() {

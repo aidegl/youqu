@@ -21,7 +21,8 @@ const WORKSHEET_ID = {
   messages: '69b5dbb4724cbbeab6557d8b',
   task_takers: '69b5dc137e3c8fc03e16dc99',
   chat_messages: '69cb54c92a26454c6e33ecc4',  // 聊天消息表
-  banners: '69b5dc147e3c8fc03e16dcab'  // 轮播图
+  banners: '69b5dc147e3c8fc03e16dcab',  // 轮播图
+  albums: '69cf22246e13c0bcab5a3845'  // 相册表
 };
 
 /**
@@ -314,7 +315,7 @@ async function getPosts(category = '', page = 1, pageSize = 20) {
     filter: children.length > 0 ? { type: 'group', logic: 'AND', children } : null,
     pageIndex: page,
     pageSize,
-    sorts: [{ field: 'created_at', isAsc: false }]
+    sorts: [{ field: '69b5db79440840fde2873762', isAsc: false }]  // 发布时间字段，倒序
   });
 
   console.log('[API.getPosts] API 响应:', result);
@@ -816,14 +817,27 @@ async function getUserInfo(userId) {
 }
 
 async function getUserPosts(userId, category = '', page = 1, pageSize = 20) {
-  const children = [{ type: 'condition', field: 'author_id', operator: 'belongsto', value: [userId] }];
-  if (category) children.push({ type: 'condition', field: 'category', operator: 'eq', value: [category] });
+  // 帖子作者字段 ID: 69b5db79440840fde2873759
+  // 分类字段 ID: 69b5db79440840fde287375b
+  const children = [{ type: 'condition', field: '69b5db79440840fde2873759', operator: 'belongsto', value: [userId] }];
+
+  // 分类筛选
+  if (category) {
+    const categoryKeys = {
+      '赏金任务': '8eb44026-eebe-4677-bc9c-435e972729a6',
+      '问答': '9e5f96d9-6255-4ec5-aef4-4df2f7c0e760',
+      '吐槽': '9646cbb4-2eee-4c91-88ac-b4cdd394be5e'
+    };
+    if (categoryKeys[category]) {
+      children.push({ type: 'condition', field: '69b5db79440840fde287375b', operator: 'eq', value: [categoryKeys[category]] });
+    }
+  }
 
   const result = await getRows(WORKSHEET_ID.posts, {
     filter: { type: 'group', logic: 'AND', children },
     pageIndex: page,
     pageSize,
-    sorts: [{ field: 'created_at', isAsc: false }]
+    sorts: [{ field: '69b5db79440840fde2873762', isAsc: false }]  // 发布时间字段
   });
 
   if (result.success && result.data?.rows) {
@@ -1332,6 +1346,74 @@ async function getFollowStats(userId) {
   };
 }
 
+/**
+ * 获取用户相册
+ * 相册表字段 ID：
+ * - 用户: 69cf222475717a002c6b3762
+ * - 图片: 69cf222475717a002c6b3764
+ * - 上传时间: 69cf222475717a002c6b3765
+ * @param {string} userId - 用户ID
+ */
+async function getUserAlbums(userId, page = 1, pageSize = 20) {
+  const result = await getRows(WORKSHEET_ID.albums, {
+    filter: {
+      type: 'group',
+      logic: 'AND',
+      children: [
+        { type: 'condition', field: '69cf222475717a002c6b3762', operator: 'belongsto', value: [userId] }
+      ]
+    },
+    pageIndex: page,
+    pageSize,
+    sorts: [{ field: '69cf222475717a002c6b3765', isAsc: false }]  // 上传时间倒序
+  });
+
+  if (result.success && result.data?.rows) {
+    const albums = result.data.rows.map(row => {
+      // 解析图片字段
+      const imageField = row['69cf222475717a002c6b3764'];
+      let imageUrl = '';
+
+      if (imageField && Array.isArray(imageField) && imageField.length > 0) {
+        const firstImage = imageField[0];
+        if (typeof firstImage === 'object') {
+          imageUrl = firstImage.large_thumbnail_full_path || firstImage.downloadUrl || firstImage.url || '';
+        }
+      }
+
+      return {
+        id: row.rowid || row.rowId,
+        image: imageUrl,
+        created_at: formatTime(row['69cf222475717a002c6b3765'])
+      };
+    });
+    return { success: true, data: albums };
+  }
+  return { success: false, data: [] };
+}
+
+/**
+ * 上传图片到相册
+ * @param {string} userId - 用户ID
+ * @param {string} imageUrl - 图片URL
+ */
+async function uploadAlbumImage(userId, imageUrl) {
+  const result = await createRow(WORKSHEET_ID.albums, {
+    '69cf222475717a002c6b3762': [userId],  // 用户
+    '69cf222475717a002c6b3764': [{ url: imageUrl, name: 'image.jpg' }],  // 图片
+    '69cf222475717a002c6b3765': new Date().toISOString()  // 上传时间
+  });
+  return result;
+}
+
+/**
+ * 删除相册图片
+ * @param {string} imageId - 图片记录ID
+ */
+async function deleteAlbumImage(imageId) {
+  return request(`/v3/app/worksheets/${WORKSHEET_ID.albums}/rows/${imageId}`, 'DELETE', { permanent: true });
+}
+
 module.exports = {
   getRows, getRow, createRow, updateRow,
   getPosts, getPostDetail, createPost,
@@ -1341,5 +1423,6 @@ module.exports = {
   uploadImageToTemp, uploadImagesToTemp,
   followUser, unfollowUser, checkIsFollowing, getFollowingList, getFollowerList, getFollowStats,
   sendChatMessage, getChatMessages, getTaskConversations,
+  getUserAlbums, uploadAlbumImage, deleteAlbumImage,
   WORKSHEET_ID, HAP_CONFIG
 };

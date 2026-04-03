@@ -1,0 +1,35 @@
+<!--pages/album/album.wxml-->
+<view class="container">
+  <!-- 图片网格 -->
+  <view class="image-grid">
+    <view class="image-item" wx:for="{{images}}" wx:key="id">
+      <image class="album-image" src="{{item.image}}" mode="aspectFill" bindtap="previewImage" data-src="{{item.image}}"></image>
+      <view class="delete-btn" bindtap="deleteImage" data-id="{{item.id}}">
+        <text>×</text>
+      </view>
+    </view>
+
+    <!-- 上传按钮 -->
+    <view class="image-item upload-btn" bindtap="chooseImage">
+      <text class="plus-icon">+</text>
+      <text class="upload-text">上传</text>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty" wx:if="{{images.length === 0 && !loading}}">
+    <text class="empty-icon">📷</text>
+    <text class="empty-text">还没有照片</text>
+    <text class="empty-tip">点击上方按钮上传图片</text>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 没有更多 -->
+  <view class="no-more" wx:if="{{!hasMore && images.length > 0}}">
+    <text>没有更多了</text>
+  </view>
+</view>
