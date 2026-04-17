@@ -84,6 +84,10 @@ Page({
     wx.navigateTo({ url: '/pages/post/post?id=' + e.currentTarget.dataset.id });
   },
 
+  goToAlbum() {
+    wx.navigateTo({ url: '/pages/album/album?userId=' + this.data.userId });
+  },
+
   // 关注/取消关注
   async toggleFollow() {
     const userInfo = app.globalData.userInfo;

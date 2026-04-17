@@ -22,6 +22,7 @@
     <view class="tab {{currentTab === '赏金任务' ? 'active' : ''}}" bindtap="switchTab" data-tab="赏金任务">赏金任务</view>
     <view class="tab {{currentTab === '问答' ? 'active' : ''}}" bindtap="switchTab" data-tab="问答">问答</view>
     <view class="tab {{currentTab === '吐槽' ? 'active' : ''}}" bindtap="switchTab" data-tab="吐槽">吐槽</view>
+    <view class="tab album-tab" bindtap="goToAlbum">📷 相册</view>
   </view>
 
   <!-- 内容列表 -->

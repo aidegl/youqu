@@ -15,6 +15,7 @@
 .tab { flex: 1; text-align: center; padding: 24rpx 0; font-size: 28rpx; color: #666; position: relative; }
 .tab.active { color: #3054EB; font-weight: 600; }
 .tab.active::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 40rpx; height: 4rpx; background: #3054EB; }
+.album-tab { color: #FF9800; }
 .content-list { padding: 20rpx; }
 .content-item { background: #fff; border-radius: 12rpx; padding: 24rpx; margin-bottom: 16rpx; }
 .item-header { display: flex; justify-content: space-between; margin-bottom: 12rpx; }

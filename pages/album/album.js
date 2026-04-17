@@ -4,13 +4,24 @@ const app = getApp();
 
 Page({
   data: {
+    userId: '',        // 相册所属用户ID
+    isSelf: false,     // 是否是自己的相册
     images: [],
     loading: false,
     hasMore: true,
     page: 1
   },
 
-  onLoad() {
+  onLoad(options) {
+    // 获取相册所属用户ID
+    const currentUserId = app.globalData.userInfo?.id;
+    const targetUserId = options.userId || currentUserId;
+
+    this.setData({
+      userId: targetUserId,
+      isSelf: targetUserId === currentUserId
+    });
+
     this.loadImages();
   },
 
@@ -23,16 +34,10 @@ Page({
   async loadImages(loadMore = false) {
     if (this.data.loading || (!loadMore && !this.data.hasMore)) return;
 
-    const userInfo = app.globalData.userInfo;
-    if (!userInfo) {
-      wx.showToast({ title: '请先登录', icon: 'none' });
-      return;
-    }
-
     this.setData({ loading: true });
 
     const page = loadMore ? this.data.page + 1 : 1;
-    const res = await api.getUserAlbums(userInfo.id, page, 20);
+    const res = await api.getUserAlbums(this.data.userId, page, 20);
 
     if (res.success) {
       const newImages = loadMore ? [...this.data.images, ...res.data] : res.data;
@@ -47,7 +52,7 @@ Page({
     }
   },
 
-  // 选择并上传图片
+  // 选择并上传图片（仅自己可操作）
   async chooseImage() {
     const userInfo = app.globalData.userInfo;
     if (!userInfo) {
@@ -104,7 +109,7 @@ Page({
     });
   },
 
-  // 删除图片
+  // 删除图片（仅自己可操作）
   async deleteImage(e) {
     const id = e.currentTarget.dataset.id;
 
