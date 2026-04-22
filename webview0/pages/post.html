@@ -7,47 +7,168 @@
   <meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
   <title>帖子详情</title>
 
-  <!-- JSSDK -->
   <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/app.js"></script>
 
-  <link rel="stylesheet" href="../css/styles.css">
-  <link rel="stylesheet" href="../css/post.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f5f5; min-height: 100vh; }
+    .container { min-height: 100vh; background: #fff; padding-bottom: 60px; }
+
+    /* 图片轮播 */
+    .post-images { width: 100%; height: 300px; position: relative; overflow: hidden; }
+    .post-image-item { width: 100%; height: 300px; object-fit: cover; cursor: pointer; }
+    .image-indicator { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+    .indicator-dot { width: 6px; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.5); }
+    .indicator-dot.active { background: #fff; }
+
+    /* 帖子内容 */
+    .post-body { padding: 15px; }
+    .post-title { font-size: 18px; font-weight: 600; color: #333; margin-bottom: 12px; line-height: 1.4; }
+    .post-content { font-size: 15px; color: #666; line-height: 1.6; }
+
+    /* 用户信息 */
+    .post-header { display: flex; align-items: center; padding: 12px 15px; border-top: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0; }
+    .author-avatar { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
+    .author-info { flex: 1; margin-left: 10px; cursor: pointer; }
+    .author-name { font-size: 15px; color: #333; font-weight: 500; }
+    .post-time { font-size: 12px; color: #999; margin-top: 2px; }
+    .follow-btn { padding: 6px 16px; border-radius: 16px; font-size: 14px; cursor: pointer; }
+    .follow-btn.following { background: #f5f5f5; color: #999; }
+    .follow-btn:not(.following) { background: #3054EB; color: #fff; }
+
+    /* 悬赏信息 */
+    .bounty-box { background: #FFF3E0; padding: 12px 15px; margin: 10px 15px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; }
+    .bounty-left { display: flex; align-items: center; }
+    .bounty-tag { font-size: 14px; color: #FF9800; margin-right: 8px; }
+    .bounty-amount { font-size: 18px; color: #FF5722; font-weight: 600; }
+    .take-btn { padding: 8px 16px; background: #FF9800; color: #fff; border-radius: 4px; font-size: 14px; cursor: pointer; }
+    .taken-tip { padding: 8px 16px; background: #f5f5f5; color: #999; border-radius: 4px; font-size: 14px; }
+
+    /* 互动按钮 */
+    .action-bar { display: flex; padding: 15px; border-top: 1px solid #f0f0f0; }
+    .action-item { flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 14px; color: #666; cursor: pointer; }
+    .action-item.active { color: #E91E63; }
+    .action-item .icon { font-size: 18px; }
+
+    /* 评论区域 */
+    .comments-section { padding: 15px; background: #f5f5f5; }
+    .section-title { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 10px; }
+    .comments-list { }
+    .comment-item { display: flex; background: #fff; padding: 12px; border-radius: 8px; margin-bottom: 8px; }
+    .comment-avatar { width: 32px; height: 32px; border-radius: 50%; }
+    .comment-body { flex: 1; margin-left: 10px; }
+    .comment-header { display: flex; align-items: center; justify-content: space-between; }
+    .comment-author { font-size: 14px; color: #333; font-weight: 500; }
+    .comment-time { font-size: 12px; color: #999; }
+    .comment-content { font-size: 14px; color: #666; margin-top: 6px; line-height: 1.5; }
+    .comment-actions { display: flex; gap: 16px; margin-top: 6px; }
+    .comment-actions .action { font-size: 12px; color: #999; cursor: pointer; }
+    .no-comment { text-align: center; padding: 20px; color: #999; font-size: 14px; }
+
+    /* 底部评论输入 */
+    .comment-input-box { position: fixed; bottom: 0; left: 0; right: 0; height: 50px; background: #fff; display: flex; align-items: center; padding: 0 10px; border-top: 1px solid #eee; z-index: 99; }
+    .comment-input { flex: 1; height: 36px; border: 1px solid #ddd; border-radius: 18px; padding: 0 12px; font-size: 14px; outline: none; }
+    .comment-input:focus { border-color: #3054EB; }
+    .send-btn { width: 60px; height: 36px; background: #3054EB; color: #fff; border-radius: 18px; font-size: 14px; margin-left: 10px; cursor: pointer; }
+
+    /* 加载状态 */
+    .loading { text-align: center; padding: 20px; color: #999; }
+    .error { text-align: center; padding: 40px; color: #E91E63; }
+  </style>
 </head>
 
 <body>
   <div class="container" id="postContainer">
-    <!-- 帖子内容由 JS 渲染 -->
-    <view class="loading" id="loadingEl">
-      <text>加载中...</text>
-    </view>
+    <div class="loading">加载中...</div>
   </div>
 
   <!-- 底部评论输入 -->
-  <view class="comment-input-box" id="commentInputBox" style="display: none;">
+  <div class="comment-input-box" id="commentInputBox" style="display: none;">
     <input class="comment-input" placeholder="说点什么..." id="commentInput" />
     <button class="send-btn" onclick="submitComment()">发送</button>
-  </view>
+  </div>
 
-  <script src="../js/api.js"></script>
-  <script src="../js/app.js"></script>
   <script>
+    // ========== 环境检测 ==========
+
+    function isInMiniProgram() {
+      return window.__wxjs_environment === 'miniprogram' || (window.wx && window.wx.miniProgram);
+    }
+
+    function postMessage(data) {
+      if (isInMiniProgram() && window.wx.miniProgram) {
+        window.wx.miniProgram.postMessage({ data });
+      }
+    }
+
+    function navigateTo(url) {
+      if (isInMiniProgram() && window.wx.miniProgram) {
+        window.wx.miniProgram.navigateTo({ url });
+      } else {
+        window.location.href = url;
+      }
+    }
+
+    function navigateBack() {
+      if (isInMiniProgram() && window.wx.miniProgram) {
+        window.wx.miniProgram.navigateBack();
+      } else {
+        window.history.back();
+      }
+    }
+
+    // ========== 用户信息 ==========
+
+    let userInfo = null;
+
+    function getHashParams() {
+      const hash = window.location.hash.slice(1);
+      if (!hash) return {};
+      const params = {};
+      hash.split('&').forEach(pair => {
+        const [key, value] = pair.split('=');
+        if (key) params[key] = decodeURIComponent(value || '');
+      });
+      return params;
+    }
+
+    function getQueryParams() {
+      const search = window.location.search.slice(1);
+      if (!search) return {};
+      const params = {};
+      search.split('&').forEach(pair => {
+        const [key, value] = pair.split('=');
+        if (key) params[key] = decodeURIComponent(value || '');
+      });
+      return params;
+    }
+
+    // ========== 页面数据 ==========
+
     let postId = '';
     let post = null;
     let comments = [];
-    let userInfo = null;
+    let currentImageIndex = 0;
+    let isFollowing = false;
+    let hasTaken = false;
 
     document.addEventListener('DOMContentLoaded', async function() {
-      // 获取帖子 ID
-      const params = window.webview.getQueryParams();
-      postId = params.id;
-
-      if (!postId) {
-        document.getElementById('loadingEl').innerHTML = '<text>帖子不存在</text>';
-        return;
+      // 获取用户信息
+      const hashParams = getHashParams();
+      if (hashParams.openid) {
+        userInfo = { openid: hashParams.openid, id: hashParams.userId };
       }
 
-      // 获取用户信息
-      userInfo = window.webview.getUserInfo();
+      // 获取帖子 ID
+      const queryParams = getQueryParams();
+      postId = queryParams.id;
+
+      if (!postId) {
+        document.getElementById('postContainer').innerHTML = '<div class="error">帖子不存在</div>';
+        return;
+      }
 
       // 加载帖子详情
       await loadPostDetail();
@@ -60,8 +181,15 @@
         post = res.data;
         renderPost();
         await loadComments();
+
+        // 检查是否已关注
+        if (userInfo?.id && post.author.id && userInfo.id !== post.author.id) {
+          const followRes = await window.API.checkIsFollowing(userInfo.id, post.author.id);
+          isFollowing = followRes.isFollowing;
+          updateFollowBtn();
+        }
       } else {
-        document.getElementById('loadingEl').innerHTML = '<text>加载失败</text>';
+        document.getElementById('postContainer').innerHTML = '<div class="error">加载失败</div>';
       }
     }
 
@@ -70,74 +198,66 @@
       const isOwner = userInfo && userInfo.id === post.author.id;
 
       container.innerHTML = `
-        <!-- 帖子内容 -->
-        <view class="post-detail">
-          <!-- 图片轮播 -->
-          ${post.images && post.images.length > 0 ? `
-            <swiper class="post-images">
-              ${post.images.map(img => `
-                <swiper-item onclick="previewImage('${img}')">
-                  <image class="post-image-item" src="${img}" mode="aspectFill"></image>
-                </swiper-item>
-              `).join('')}
-            </swiper>
-          ` : ''}
+        <!-- 图片轮播 -->
+        ${post.images && post.images.length > 0 ? `
+          <div class="post-images" id="imageSwiper">
+            <img class="post-image-item" src="${post.images[0]}" onclick="previewImage(0)" id="currentImage">
+            <div class="image-indicator">
+              ${post.images.map((img, i) => `<div class="indicator-dot ${i === 0 ? 'active' : ''}" onclick="switchImage(${i})"></div>`).join('')}
+            </div>
+          </div>
+        ` : ''}
 
-          <!-- 标题和内容 -->
-          <view class="post-body">
-            <text class="post-title">${post.title}</text>
-            <text class="post-content">${post.content}</text>
-          </view>
+        <!-- 标题和内容 -->
+        <div class="post-body">
+          <div class="post-title">${post.title}</div>
+          <div class="post-content">${post.content}</div>
+        </div>
 
-          <!-- 用户信息 -->
-          <view class="post-header">
-            <image class="author-avatar" src="${post.author.avatar}" onclick="goToUserSpace('${post.author.id}')"></image>
-            <view class="author-info" onclick="goToUserSpace('${post.author.id}')">
-              <text class="author-name">${post.author.nickname}</text>
-              <text class="post-time">${post.created_at}</text>
-            </view>
-            ${!isOwner ? `
-              <view class="follow-btn" onclick="toggleFollow()">
-                关注
-              </view>
-            ` : ''}
-          </view>
+        <!-- 用户信息 -->
+        <div class="post-header">
+          <img class="author-avatar" src="${post.author.avatar}" onclick="goToUserSpace('${post.author.id}')">
+          <div class="author-info" onclick="goToUserSpace('${post.author.id}')">
+            <div class="author-name">${post.author.nickname}</div>
+            <div class="post-time">${post.created_at}</div>
+          </div>
+          ${!isOwner ? `<div class="follow-btn ${isFollowing ? 'following' : ''}" id="followBtn" onclick="toggleFollow()">${isFollowing ? '已关注' : '关注'}</div>` : ''}
+        </div>
 
-          <!-- 悬赏信息 -->
-          ${post.category === '赏金任务' ? `
-            <view class="bounty-box">
-              <text class="bounty-tag">【${post.task_type}】</text>
-              <view class="bounty-amount">悬赏 ¥${post.bounty_amount}</view>
-              ${!isOwner ? `
-                <button class="take-btn" onclick="takeTask()">接取任务</button>
-              ` : ''}
-            </view>
-          ` : ''}
+        <!-- 悬赏信息 -->
+        ${post.category === '赏金任务' ? `
+          <div class="bounty-box">
+            <div class="bounty-left">
+              <span class="bounty-tag">【${post.task_type}】</span>
+              <span class="bounty-amount">悬赏 ¥${post.bounty_amount}</span>
+            </div>
+            ${!isOwner ? `<div class="take-btn" id="takeBtn" onclick="takeTask()">接取任务</div>` : ''}
+          </div>
+        ` : ''}
 
-          <!-- 互动按钮 -->
-          <view class="action-bar">
-            <view class="action-item" onclick="toggleLike()">
-              <text class="icon">🤍</text>
-              <text>${post.likes_count}</text>
-            </view>
-            <view class="action-item">
-              <text class="icon">💬</text>
-              <text>${post.comments_count}</text>
-            </view>
-            <view class="action-item" onclick="sharePost()">
-              <text class="icon">📤</text>
-              <text>分享</text>
-            </view>
-          </view>
-        </view>
+        <!-- 互动按钮 -->
+        <div class="action-bar">
+          <div class="action-item ${post.isLiked ? 'active' : ''}" onclick="toggleLike()">
+            <span class="icon">${post.isLiked ? '❤️' : '🤍'}</span>
+            <span>${post.likes_count}</span>
+          </div>
+          <div class="action-item">
+            <span class="icon">💬</span>
+            <span>${post.comments_count}</span>
+          </div>
+          <div class="action-item" onclick="sharePost()">
+            <span class="icon">📤</span>
+            <span>分享</span>
+          </div>
+        </div>
 
         <!-- 评论区域 -->
-        <view class="comments-section">
-          <view class="section-title">评论 ${post.comments_count}</view>
-          <view class="comments-list" id="commentsList">
-            <!-- 评论由 loadComments 渲染 -->
-          </view>
-        </view>
+        <div class="comments-section">
+          <div class="section-title">评论 ${post.comments_count}</div>
+          <div class="comments-list" id="commentsList">
+            <div class="loading">加载中...</div>
+          </div>
+        </div>
       `;
 
       // 显示评论输入框
@@ -145,55 +265,126 @@
     }
 
     async function loadComments() {
-      const res = await window.API.getComments ? await window.API.getComments(postId) : { success: false, data: [] };
+      const res = await window.API.getComments(postId);
       comments = res.success ? res.data : [];
 
       const commentsList = document.getElementById('commentsList');
       if (comments.length === 0) {
-        commentsList.innerHTML = '<view class="no-comment"><text>暂无评论，快来抢沙发吧~</text></view>';
+        commentsList.innerHTML = '<div class="no-comment">暂无评论，快来抢沙发吧~</div>';
       } else {
         commentsList.innerHTML = comments.map(comment => `
-          <view class="comment-item">
-            <image class="comment-avatar" src="${comment.author.avatar}"></image>
-            <view class="comment-body">
-              <view class="comment-header">
-                <text class="comment-author">${comment.author.nickname}</text>
-                <text class="comment-time">${comment.created_at}</text>
-              </view>
-              <text class="comment-content">${comment.content}</text>
-              <view class="comment-actions">
-                <text class="action" onclick="replyComment('${comment.author.nickname}')">回复</text>
-              </view>
-            </view>
-          </view>
+          <div class="comment-item">
+            <img class="comment-avatar" src="${comment.author.avatar || 'https://fp1.mingdaoyun.cn/customIcon/0_lego.svg'}">
+            <div class="comment-body">
+              <div class="comment-header">
+                <span class="comment-author">${comment.author.nickname}</span>
+                <span class="comment-time">${comment.created_at}</span>
+              </div>
+              <div class="comment-content">${comment.content}</div>
+              <div class="comment-actions">
+                <span class="action" onclick="replyComment('${comment.author.nickname}')">回复</span>
+                <span class="action" onclick="likeComment('${comment.id}')">赞 ${comment.likes_count}</span>
+              </div>
+            </div>
+          </div>
         `).join('');
       }
     }
 
-    function previewImage(src) {
-      if (window.webview.isInMiniProgram()) {
-        // 在小程序中预览图片需要原生支持
-        window.webview.postMessage({ type: 'previewImage', current: src, urls: post.images });
+    // ========== 图片操作 ==========
+
+    function switchImage(index) {
+      if (!post?.images) return;
+      currentImageIndex = index;
+      document.getElementById('currentImage').src = post.images[index];
+      document.querySelectorAll('.indicator-dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === index);
+      });
+    }
+
+    function previewImage(index) {
+      if (isInMiniProgram()) {
+        postMessage({ type: 'previewImage', current: post.images[index], urls: post.images });
       } else {
-        window.open(src, '_blank');
+        window.open(post.images[index], '_blank');
       }
     }
 
+    // ========== 功能操作 ==========
+
     async function toggleLike() {
       if (!userInfo) {
-        alert('请先登录');
+        if (isInMiniProgram()) {
+          postMessage({ type: 'login' });
+        } else {
+          alert('请先登录');
+        }
         return;
       }
-      // 调用点赞 API
-      alert('点赞功能需要登录');
+
+      const res = await window.API.toggleLike(userInfo.id, 'post', postId);
+      if (res.success) {
+        post.isLiked = true;
+        post.likes_count++;
+        renderPost();
+      }
+    }
+
+    async function toggleFollow() {
+      if (!userInfo) {
+        if (isInMiniProgram()) {
+          postMessage({ type: 'login' });
+        } else {
+          alert('请先登录');
+        }
+        return;
+      }
+
+      const btn = document.getElementById('followBtn');
+      if (isFollowing) {
+        // 取消关注（暂时不支持）
+        alert('暂不支持取消关注');
+      } else {
+        const res = await window.API.followUser(userInfo.id, post.author.id);
+        if (res.success) {
+          isFollowing = true;
+          updateFollowBtn();
+        } else {
+          alert(res.error_msg || '关注失败');
+        }
+      }
+    }
+
+    function updateFollowBtn() {
+      const btn = document.getElementById('followBtn');
+      if (btn) {
+        btn.className = `follow-btn ${isFollowing ? 'following' : ''}`;
+        btn.textContent = isFollowing ? '已关注' : '关注';
+      }
     }
 
     async function takeTask() {
       if (!userInfo) {
-        alert('请先登录');
+        if (isInMiniProgram()) {
+          postMessage({ type: 'login' });
+        } else {
+          alert('请先登录');
+        }
         return;
       }
-      alert('接取任务功能需要登录');
+
+      const res = await window.API.takeTask(postId, userInfo.id);
+      if (res.success) {
+        alert('任务接取成功！');
+        hasTaken = true;
+        const takeBtn = document.getElementById('takeBtn');
+        if (takeBtn) {
+          takeBtn.className = 'taken-tip';
+          takeBtn.textContent = '已接取';
+        }
+      } else {
+        alert(res.error_msg || '接取失败');
+      }
     }
 
     async function submitComment() {
@@ -206,12 +397,24 @@
       }
 
       if (!userInfo) {
-        alert('请先登录');
+        if (isInMiniProgram()) {
+          postMessage({ type: 'login' });
+        } else {
+          alert('请先登录');
+        }
         return;
       }
 
-      // 调用评论 API
-      alert('评论功能需要登录');
+      const res = await window.API.addComment({ post_id: postId, content: text }, userInfo);
+      if (res.success) {
+        input.value = '';
+        post.comments_count++;
+        await loadComments();
+        renderPost();
+        alert('评论成功');
+      } else {
+        alert(res.error_msg || '评论失败');
+      }
     }
 
     function replyComment(nickname) {
@@ -220,29 +423,31 @@
       input.focus();
     }
 
-    function goToUserSpace(userId) {
-      if (userId) {
-        if (window.webview.isInMiniProgram()) {
-          window.webview.navigateTo('/pages/profile-space/profile-space?id=' + userId);
-        } else {
-          window.location.href = './profile.html?id=' + userId;
-        }
-      }
-    }
-
-    async function toggleFollow() {
+    function likeComment(commentId) {
       if (!userInfo) {
-        alert('请先登录');
+        if (isInMiniProgram()) {
+          postMessage({ type: 'login' });
+        } else {
+          alert('请先登录');
+        }
         return;
       }
-      alert('关注功能需要登录');
+      alert('点赞功能暂未实现');
+    }
+
+    function goToUserSpace(userId) {
+      if (!userId) return;
+      if (isInMiniProgram()) {
+        navigateTo('/pages/profile-space/profile-space?id=' + userId);
+      } else {
+        window.location.href = './profile.html?id=' + userId;
+      }
     }
 
     function sharePost() {
-      if (window.webview.isInMiniProgram()) {
+      if (isInMiniProgram()) {
         // 小程序分享需要原生支持
       } else {
-        // 浏览器环境复制链接
         const url = window.location.href;
         navigator.clipboard.writeText(url).then(() => {
           alert('链接已复制');

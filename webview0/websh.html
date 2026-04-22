@@ -8,16 +8,19 @@
   <title>友趣校园</title>
 
   <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/app.js"></script>
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f5f5; min-height: 100vh; }
-    .container { min-height: 100vh; background: #f5f5f5; padding-bottom: 50px; }
+    .container { min-height: 100vh; background: #f5f5f5; padding-bottom: 60px; }
 
     /* 轮播图 */
-    .banner-swiper { height: 180px; overflow: hidden; }
-    .banner-slide { height: 180px; background: #f5f5f5; }
+    .banner-swiper { height: 180px; overflow: hidden; position: relative; }
+    .banner-slide { height: 180px; background: #f5f5f5; cursor: pointer; }
     .banner-image { width: 100%; height: 100%; object-fit: cover; }
+    .banner-loading { height: 180px; display: flex; align-items: center; justify-content: center; color: #999; }
 
     /* 分类导航 */
     .category-scroll { background: #fff; padding: 10px 0; border-bottom: 1px solid #eee; white-space: nowrap; overflow-x: auto; }
@@ -45,7 +48,7 @@
     .author-avatar { width: 20px; height: 20px; border-radius: 50%; }
     .author-info { flex: 1; }
     .author-name { font-size: 12px; color: #333; }
-    .post-time { font-size: 10px; color: #999; }
+    .post-time { font-size: 10px; color: #999; margin-left: 6px; }
     .post-category { padding: 3px 6px; border-radius: 4px; font-size: 10px; }
     .post-category.bounty { background: #FFF3E0; color: #FF9800; }
     .post-category.qa { background: #E3F2FD; color: #2196F3; }
@@ -55,7 +58,7 @@
     .footer-item { display: flex; align-items: center; margin-right: 16px; color: #999; font-size: 12px; }
 
     /* 悬浮发布按钮 */
-    .float-publish-btn { position: fixed; right: 15px; bottom: 60px; width: 50px; height: 50px; background: linear-gradient(135deg, #3054EB, #4A7AF7); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(48, 84, 235, 0.4); z-index: 100; cursor: pointer; }
+    .float-publish-btn { position: fixed; right: 15px; bottom: 70px; width: 50px; height: 50px; background: linear-gradient(135deg, #3054EB, #4A7AF7); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(48, 84, 235, 0.4); z-index: 100; cursor: pointer; }
     .publish-icon { color: #fff; font-size: 24px; }
 
     /* 底部导航 */
@@ -66,6 +69,7 @@
 
     /* 加载状态 */
     .loading, .no-more { text-align: center; padding: 15px; color: #999; font-size: 13px; }
+    .empty { text-align: center; padding: 40px; color: #999; font-size: 14px; }
   </style>
 </head>
 
@@ -73,7 +77,7 @@
   <div class="container" id="appContainer">
     <!-- 轮播图 -->
     <div class="banner-swiper" id="bannerSwiper">
-      <div class="loading">加载中...</div>
+      <div class="banner-loading">加载中...</div>
     </div>
 
     <!-- 分类导航 -->
@@ -85,30 +89,29 @@
     <div class="posts-list" id="postsList">
       <div class="loading">加载中...</div>
     </div>
+  </div>
 
-    <!-- 悬浮发布按钮 -->
-    <div class="float-publish-btn" onclick="goToPublish()">
-      <div class="publish-icon">+</div>
+  <!-- 悬浮发布按钮 -->
+  <div class="float-publish-btn" onclick="goToPublish()">
+    <div class="publish-icon">+</div>
+  </div>
+
+  <!-- 底部导航 -->
+  <div class="bottom-nav">
+    <div class="nav-item active" id="navHome">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span>首页</span>
     </div>
-
-    <!-- 底部导航 -->
-    <div class="bottom-nav">
-      <div class="nav-item active" onclick="switchTab('home')">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-        <span>首页</span>
-      </div>
-      <div class="nav-item" onclick="switchTab('messages')">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-        <span>消息</span>
-      </div>
-      <div class="nav-item" onclick="switchTab('profile')">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-        <span>我的</span>
-      </div>
+    <div class="nav-item" id="navMessages" onclick="switchTab('messages')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+      <span>消息</span>
+    </div>
+    <div class="nav-item" id="navProfile" onclick="switchTab('profile')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      <span>我的</span>
     </div>
   </div>
 
-  <script src="./js/api.js"></script>
   <script>
     // ========== 环境检测和通信 ==========
 
@@ -127,13 +130,15 @@
       if (isInMiniProgram() && window.wx.miniProgram) {
         window.wx.miniProgram.navigateTo({ url });
       } else {
-        alert('此功能需要在小程序中使用');
+        window.location.href = url;
       }
     }
 
     function navigateBack() {
       if (isInMiniProgram() && window.wx.miniProgram) {
         window.wx.miniProgram.navigateBack();
+      } else {
+        window.history.back();
       }
     }
 
@@ -152,24 +157,37 @@
       return params;
     }
 
+    function getQueryParams() {
+      const search = window.location.search.slice(1);
+      if (!search) return {};
+      const params = {};
+      search.split('&').forEach(pair => {
+        const [key, value] = pair.split('=');
+        if (key) params[key] = decodeURIComponent(value || '');
+      });
+      return params;
+    }
+
     function initUserInfo() {
-      const params = getHashParams();
-      if (params.openid) {
-        userInfo = { openid: params.openid, id: params.userId };
-        console.log('[H5] 从 hash 获取 openid:', params.openid);
+      const hashParams = getHashParams();
+      if (hashParams.openid) {
+        userInfo = { openid: hashParams.openid, id: hashParams.userId };
+        console.log('[H5] 从 hash 获取 openid:', hashParams.openid, 'userId:', hashParams.userId);
       }
     }
 
-    // 监听 hash 变化（小程序通过更新 hash 传递 openid）
+    // 监听 hash 变化
     window.addEventListener('hashchange', () => {
       initUserInfo();
-      console.log('[H5] hash 变化，openid:', userInfo?.openid);
+      console.log('[H5] hash 变化，userInfo:', userInfo);
     });
 
     // ========== 页面初始化 ==========
 
     let currentCategory = '';
     let page = 1;
+    let hasMore = true;
+    let loading = false;
 
     document.addEventListener('DOMContentLoaded', async function() {
       initUserInfo();
@@ -210,12 +228,25 @@
       `).join('');
     }
 
-    async function loadPosts() {
-      const res = await window.API.getPosts(currentCategory, page, 10);
+    async function loadPosts(loadMore = false) {
+      if (loading) return;
+      if (loadMore && !hasMore) return;
+
+      loading = true;
       const list = document.getElementById('postsList');
 
+      if (!loadMore) {
+        list.innerHTML = '<div class="loading">加载中...</div>';
+        page = 1;
+      }
+
+      const res = await window.API.getPosts(currentCategory, page, 10);
+
       if (res.success && res.data.length > 0) {
-        list.innerHTML = res.data.map(post => `
+        const posts = res.data;
+        hasMore = posts.length >= 10;
+
+        let html = posts.map(post => `
           <div class="post-card" onclick="goToDetail('${post.id}')">
             ${post.cover ? `<div class="post-cover"><img src="${post.cover}" alt="cover"></div>` : ''}
             <div class="post-main">
@@ -239,15 +270,34 @@
               </div>
             </div>
           </div>
-        `).join('') + '<div class="no-more">没有更多了</div>';
+        `).join('');
+
+        if (loadMore) {
+          // 移除旧的"没有更多了"提示，追加新内容
+          const existingContent = list.innerHTML.replace('<div class="no-more">没有更多了</div>', '');
+          list.innerHTML = existingContent + html;
+        } else {
+          list.innerHTML = html;
+        }
+
+        if (!hasMore) {
+          list.innerHTML += '<div class="no-more">没有更多了</div>';
+        }
+
+        page++;
       } else {
-        list.innerHTML = '<div class="loading">暂无内容</div>';
+        if (!loadMore) {
+          list.innerHTML = '<div class="empty">暂无内容</div>';
+        }
+        hasMore = false;
       }
+
+      loading = false;
     }
 
     function switchCategory(cat) {
       currentCategory = cat;
-      page = 1;
+      hasMore = true;
       renderCategories();
       loadPosts();
     }
@@ -259,31 +309,57 @@
     }
 
     function goToDetail(id) {
-      navigateTo('/pages/post/post?id=' + id);
+      if (isInMiniProgram()) {
+        navigateTo('/pages/post/post?id=' + id);
+      } else {
+        window.location.href = './pages/post.html?id=' + id;
+      }
     }
 
     function goToPublish() {
       if (!userInfo) {
-        // 未登录，请求小程序登录
         postMessage({ type: 'login' });
         return;
       }
-      navigateTo('/pages/publish/publish');
+      if (isInMiniProgram()) {
+        navigateTo('/pages/publish/publish');
+      } else {
+        window.location.href = './pages/publish.html';
+      }
     }
 
     function switchTab(tab) {
-      if (tab === 'home') {
-        // 已在首页，刷新
-        loadPosts();
-      } else if (tab === 'messages') {
-        navigateTo('/pages/messages/messages');
+      if (tab === 'messages') {
+        if (isInMiniProgram()) {
+          navigateTo('/pages/messages/messages');
+        } else {
+          window.location.href = './pages/messages.html';
+        }
       } else if (tab === 'profile') {
-        navigateTo('/pages/profile/profile');
+        if (isInMiniProgram()) {
+          navigateTo('/pages/profile/profile');
+        } else {
+          window.location.href = './pages/profile.html';
+        }
       }
+    }
 
-      // 更新导航高亮
-      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-      event.currentTarget.classList.add('active');
+    // ========== 无限滚动 ==========
+
+    window.addEventListener('scroll', function() {
+      const scrollTop = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+
+      if (scrollTop + windowHeight >= documentHeight - 100) {
+        loadPosts(true);
+      }
+    });
+
+    // ========== 下拉刷新（小程序环境） ==========
+
+    if (isInMiniProgram() && window.wx.miniProgram) {
+      // 小程序会通过 postMessage 通知刷新
     }
   </script>
 </body>

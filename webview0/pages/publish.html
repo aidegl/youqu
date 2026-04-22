@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+  <title>发布</title>
+
+  <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/app.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f5f5; min-height: 100vh; }
+    .container { min-height: 100vh; background: #fff; }
+
+    /* 头部 */
+    .header { display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; background: #fff; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 10; }
+    .header-back { font-size: 16px; color: #333; cursor: pointer; }
+    .header-title { font-size: 18px; font-weight: 600; color: #333; }
+    .header-submit { font-size: 16px; color: #3054EB; cursor: pointer; }
+
+    /* 表单 */
+    .form { padding: 15px; }
+
+    .form-item { margin-bottom: 20px; }
+    .label { font-size: 14px; color: #333; font-weight: 500; margin-bottom: 10px; display: block; }
+
+    /* 分类选择 */
+    .category-list { display: flex; gap: 10px; }
+    .category-btn { padding: 8px 16px; border-radius: 16px; font-size: 14px; color: #666; background: #f5f5f5; cursor: pointer; border: none; }
+    .category-btn.active { background: #3054EB; color: #fff; }
+
+    /* 任务类型 */
+    .task-types { display: flex; gap: 10px; flex-wrap: wrap; }
+    .task-type-btn { padding: 8px 16px; border-radius: 16px; font-size: 14px; color: #666; background: #f5f5f5; cursor: pointer; border: none; }
+    .task-type-btn.active { background: #FF9800; color: #fff; }
+
+    /* 输入框 */
+    .input { width: 100%; height: 44px; border: 1px solid #ddd; border-radius: 8px; padding: 0 12px; font-size: 15px; outline: none; }
+    .input:focus { border-color: #3054EB; }
+
+    /* 文本域 */
+    .textarea { width: 100%; min-height: 120px; border: 1px solid #ddd; border-radius: 8px; padding: 12px; font-size: 15px; outline: none; resize: none; }
+    .textarea:focus { border-color: #3054EB; }
+
+    /* 图片上传 */
+    .image-list { display: flex; gap: 10px; flex-wrap: wrap; }
+    .image-item { width: 80px; height: 80px; border-radius: 8px; position: relative; overflow: hidden; }
+    .image-item img { width: 100%; height: 100%; object-fit: cover; }
+    .image-item .delete-btn { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: rgba(0,0,0,0.5); color: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; }
+    .add-image { width: 80px; height: 80px; border-radius: 8px; border: 1px dashed #ddd; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #999; cursor: pointer; }
+
+    /* 提示 */
+    .tip { font-size: 12px; color: #999; margin-top: 6px; }
+
+    /* 提交按钮 */
+    .submit-btn { width: 100%; height: 44px; background: #3054EB; color: #fff; border-radius: 8px; font-size: 16px; cursor: pointer; border: none; margin-top: 20px; }
+    .submit-btn:disabled { background: #ccc; }
+
+    /* 加载提示 */
+    .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.9); display: none; align-items: center; justify-content: center; z-index: 100; }
+    .loading-overlay.show { display: flex; }
+    .loading-text { font-size: 16px; color: #333; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- 头部 -->
+    <div class="header">
+      <div class="header-back" onclick="goBack()">← 返回</div>
+      <div class="header-title">发布</div>
+      <div class="header-submit" onclick="submitPost()">发布</div>
+    </div>
+
+    <!-- 表单 -->
+    <div class="form">
+      <!-- 分类选择 -->
+      <div class="form-item">
+        <span class="label">选择分类</span>
+        <div class="category-list" id="categoryList"></div>
+      </div>
+
+      <!-- 任务类型（仅赏金任务） -->
+      <div class="form-item" id="taskTypeSection" style="display: none;">
+        <span class="label">任务类型</span>
+        <div class="task-types" id="taskTypeList"></div>
+      </div>
+
+      <!-- 悬赏金额（仅赏金任务） -->
+      <div class="form-item" id="bountySection" style="display: none;">
+        <span class="label">悬赏金额（单位：元）</span>
+        <input class="input" type="number" placeholder="请输入金额" id="bountyInput">
+        <span class="tip">建议设置合理的悬赏金额，提高任务完成率</span>
+      </div>
+
+      <!-- 标题 -->
+      <div class="form-item">
+        <span class="label">标题</span>
+        <input class="input" placeholder="请输入标题" id="titleInput">
+      </div>
+
+      <!-- 内容 -->
+      <div class="form-item">
+        <span class="label">内容</span>
+        <textarea class="textarea" placeholder="请输入详细内容..." id="contentInput"></textarea>
+      </div>
+
+      <!-- 图片 -->
+      <div class="form-item">
+        <span class="label">图片（最多9张）</span>
+        <div class="image-list" id="imageList">
+          <div class="add-image" onclick="chooseImage()">+</div>
+        </div>
+      </div>
+
+      <!-- 提交按钮 -->
+      <button class="submit-btn" onclick="submitPost()">发布</button>
+    </div>
+  </div>
+
+  <!-- 加载提示 -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-text" id="loadingText">发布中...</div>
+  </div>
+
+  <script>
+    // ========== 环境检测 ==========
+
+    function isInMiniProgram() {
+      return window.__wxjs_environment === 'miniprogram' || (window.wx && window.wx.miniProgram);
+    }
+
+    function postMessage(data) {
+      if (isInMiniProgram() && window.wx.miniProgram) {
+        window.wx.miniProgram.postMessage({ data });
+      }
+    }
+
+    function navigateTo(url) {
+      if (isInMiniProgram() && window.wx.miniProgram) {
+        window.wx.miniProgram.navigateTo({ url });
+      } else {
+        window.location.href = url;
+      }
+    }
+
+    function navigateBack() {
+      if (isInMiniProgram() && window.wx.miniProgram) {
+        window.wx.miniProgram.navigateBack();
+      } else {
+        window.history.back();
+      }
+    }
+
+    function goBack() {
+      navigateBack();
+    }
+
+    // ========== 用户信息 ==========
+
+    let userInfo = null;
+
+    function getHashParams() {
+      const hash = window.location.hash.slice(1);
+      if (!hash) return {};
+      const params = {};
+      hash.split('&').forEach(pair => {
+        const [key, value] = pair.split('=');
+        if (key) params[key] = decodeURIComponent(value || '');
+      });
+      return params;
+    }
+
+    // ========== 数据 ==========
+
+    const categories = [
+      { id: '赏金任务', name: '赏金任务' },
+      { id: '问答', name: '问答' },
+      { id: '吐槽', name: '吐槽' }
+    ];
+
+    const taskTypes = [
+      { id: '一对多', name: '一对多' },
+      { id: '一对一', name: '一对一' },
+      { id: '摄影', name: '摄影' },
+      { id: '娱乐', name: '娱乐' },
+      { id: '学习', name: '学习' },
+      { id: '运动', name: '运动' },
+      { id: '美食', name: '美食' }
+    ];
+
+    let selectedCategory = '';
+    let selectedTaskType = '';
+    let images = [];
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // 获取用户信息
+      const hashParams = getHashParams();
+      if (hashParams.openid) {
+        userInfo = { openid: hashParams.openid, id: hashParams.userId };
+      }
+
+      renderCategories();
+      renderTaskTypes();
+    });
+
+    function renderCategories() {
+      const list = document.getElementById('categoryList');
+      list.innerHTML = categories.map(c => `
+        <button class="category-btn ${c.id === selectedCategory ? 'active' : ''}" onclick="selectCategory('${c.id}')">${c.name}</button>
+      `).join('');
+    }
+
+    function renderTaskTypes() {
+      const list = document.getElementById('taskTypeList');
+      list.innerHTML = taskTypes.map(t => `
+        <button class="task-type-btn ${t.id === selectedTaskType ? 'active' : ''}" onclick="selectTaskType('${t.id}')">${t.name}</button>
+      `).join('');
+    }
+
+    function selectCategory(cat) {
+      selectedCategory = cat;
+      renderCategories();
+
+      // 显示/隐藏任务类型和悬赏金额
+      const taskTypeSection = document.getElementById('taskTypeSection');
+      const bountySection = document.getElementById('bountySection');
+
+      if (cat === '赏金任务') {
+        taskTypeSection.style.display = 'block';
+        bountySection.style.display = 'block';
+      } else {
+        taskTypeSection.style.display = 'none';
+        bountySection.style.display = 'none';
+        selectedTaskType = '';
+        renderTaskTypes();
+        document.getElementById('bountyInput').value = '';
+      }
+    }
+
+    function selectTaskType(type) {
+      selectedTaskType = type;
+      renderTaskTypes();
+    }
+
+    function chooseImage() {
+      if (images.length >= 9) {
+        alert('最多上传9张图片');
+        return;
+      }
+
+      if (isInMiniProgram()) {
+        // 在小程序环境下，通知小程序选择图片
+        postMessage({ type: 'chooseImage', maxCount: 9 - images.length });
+      } else {
+        // 浏览器环境下，使用文件选择
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.multiple = true;
+        input.onchange = function(e) {
+          const files = e.target.files;
+          for (let i = 0; i < files.length && images.length < 9; i++) {
+            const file = files[i];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              images.push(e.target.result);
+              renderImages();
+            };
+            reader.readAsDataURL(file);
+          }
+        };
+        input.click();
+      }
+    }
+
+    function renderImages() {
+      const list = document.getElementById('imageList');
+      let html = images.map((img, i) => `
+        <div class="image-item">
+          <img src="${img}" alt="image">
+          <div class="delete-btn" onclick="deleteImage(${i})">×</div>
+        </div>
+      `).join('');
+
+      if (images.length < 9) {
+        html += '<div class="add-image" onclick="chooseImage()">+</div>';
+      }
+
+      list.innerHTML = html;
+    }
+
+    function deleteImage(index) {
+      images.splice(index, 1);
+      renderImages();
+    }
+
+    // 接收小程序传来的图片
+    window.addEventListener('message', function(e) {
+      const data = e.data;
+      if (data.type === 'images' && data.images) {
+        images = images.concat(data.images);
+        renderImages();
+      }
+    });
+
+    async function submitPost() {
+      if (!selectedCategory) {
+        alert('请选择分类');
+        return;
+      }
+
+      const title = document.getElementById('titleInput').value.trim();
+      const content = document.getElementById('contentInput').value.trim();
+
+      if (!title) {
+        alert('请输入标题');
+        return;
+      }
+
+      if (!content) {
+        alert('请输入内容');
+        return;
+      }
+
+      if (!userInfo) {
+        if (isInMiniProgram()) {
+          postMessage({ type: 'login' });
+        } else {
+          alert('请先登录');
+        }
+        return;
+      }
+
+      // 显示加载提示
+      const loadingOverlay = document.getElementById('loadingOverlay');
+      const loadingText = document.getElementById('loadingText');
+      loadingText.textContent = images.length > 0 ? `上传图片(0/${images.length})...` : '发布中...';
+      loadingOverlay.classList.add('show');
+
+      try {
+        // 构建数据
+        const postData = {
+          title: title,
+          content: content,
+          category: selectedCategory,
+          task_type: selectedTaskType,
+          bounty_amount: parseFloat(document.getElementById('bountyInput').value) || 0,
+          images: images
+        };
+
+        // 调用小程序原生发布（因为需要上传图片）
+        if (isInMiniProgram()) {
+          postMessage({ type: 'publish', data: postData });
+        } else {
+          // 浏览器环境直接发布（无图片上传）
+          const res = await window.API.createRow(window.API.WORKSHEET_ID.posts, {
+            '69b5db79440840fde2873756': title,
+            '69b5db79440840fde2873757': content,
+            '69b5db79440840fde287375b': window.API.getCategoryKey(selectedCategory),
+            '69b5db79440840fde287375c': selectedTaskType ? window.API.getTaskTypeKey(selectedTaskType) : [],
+            '69b5db79440840fde287375d': postData.bounty_amount,
+            '69b5db79440840fde2873759': [userInfo.id],
+            '69b5db79440840fde2873762': new Date().toISOString()
+          });
+
+          loadingOverlay.classList.remove('show');
+
+          if (res.success) {
+            alert('发布成功');
+            navigateBack();
+          } else {
+            alert(res.error_msg || '发布失败');
+          }
+        }
+      } catch (e) {
+        loadingOverlay.classList.remove('show');
+        alert('发布失败：' + e.message);
+      }
+    }
+  </script>
+</body>
+
+</html>

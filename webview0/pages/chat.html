@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+  <title>任务对话</title>
+
+  <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/app.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f5f5; min-height: 100vh; }
+    .container { min-height: 100vh; background: #f5f5f5; display: flex; flex-direction: column; }
+
+    /* 任务信息头部 */
+    .task-info { background: #fff; padding: 12px 15px; border-bottom: 1px solid #eee; cursor: pointer; }
+    .task-title { font-size: 15px; color: #333; font-weight: 500; }
+    .task-status { font-size: 12px; color: #FF9800; margin-top: 4px; }
+
+    /* 消息列表 */
+    .message-list { flex: 1; overflow-y: auto; padding: 15px; }
+
+    .message-item { display: flex; margin-bottom: 12px; }
+    .message-item.self { justify-content: flex-end; }
+    .message-item.other { justify-content: flex-start; }
+
+    .msg-avatar { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; }
+    .msg-content-wrap { max-width: 70%; margin: 0 10px; }
+    .message-item.self .msg-content-wrap { text-align: right; }
+
+    .message-bubble { display: inline-block; padding: 10px 12px; border-radius: 8px; font-size: 14px; line-height: 1.5; word-break: break-all; }
+    .message-item.self .message-bubble { background: #3054EB; color: #fff; }
+    .message-item.other .message-bubble { background: #fff; color: #333; }
+
+    .message-time { font-size: 11px; color: #999; margin-top: 4px; }
+
+    /* 空状态 */
+    .empty { text-align: center; padding: 40px; color: #999; font-size: 14px; }
+
+    /* 输入框 */
+    .input-box { background: #fff; padding: 10px 15px; border-top: 1px solid #eee; display: flex; align-items: center; }
+    .message-input { flex: 1; height: 36px; border: 1px solid #ddd; border-radius: 18px; padding: 0 12px; font-size: 14px; outline: none; }
+    .message-input:focus { border-color: #3054EB; }
+    .send-btn { width: 60px; height: 36px; background: #3054EB; color: #fff; border-radius: 18px; font-size: 14px; margin-left: 10px; cursor: pointer; border: none; }
+
+    /* 加载状态 */
+    .loading { text-align: center; padding: 20px; color: #999; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- 任务信息 -->
+    <div class="task-info" onclick="goToPost()">
+      <div class="task-title" id="taskTitle">加载中...</div>
+      <div class="task-status" id="taskStatus"></div>
+    </div>
+
+    <!-- 消息列表 -->
+    <div class="message-list" id="messageList">
+      <div class="loading">加载中...</div>
+    </div>
+
+    <!-- 输入框 -->
+    <div class="input-box">
+      <input class="message-input" placeholder="输入消息..." id="inputText">
+      <button class="send-btn" onclick="sendMessage()">发送</button>
+    </div>
+  </div>
+
+  <script>
+    // ========== 环境检测 ==========
+
+    function isInMiniProgram() {
+      return window.__wxjs_environment === 'miniprogram' || (window.wx && window.wx.miniProgram);
+    }
+
+    function postMessage(data) {
+      if (isInMiniProgram() && window.wx.miniProgram) {
+        window.wx.miniProgram.postMessage({ data });
+      }
+    }
+
+    function navigateTo(url) {
+      if (isInMiniProgram() && window.wx.miniProgram) {
+        window.wx.miniProgram.navigateTo({ url });
+      } else {
+        window.location.href = url;
+      }
+    }
+
+    function navigateBack() {
+      if (isInMiniProgram() && window.wx.miniProgram) {
+        window.wx.miniProgram.navigateBack();
+      } else {
+        window.history.back();
+      }
+    }
+
+    // ========== 用户信息 ==========
+
+    let userInfo = null;
+
+    function getHashParams() {
+      const hash = window.location.hash.slice(1);
+      if (!hash) return {};
+      const params = {};
+      hash.split('&').forEach(pair => {
+        const [key, value] = pair.split('=');
+        if (key) params[key] = decodeURIComponent(value || '');
+      });
+      return params;
+    }
+
+    function getQueryParams() {
+      const search = window.location.search.slice(1);
+      if (!search) return {};
+      const params = {};
+      search.split('&').forEach(pair => {
+        const [key, value] = pair.split('=');
+        if (key) params[key] = decodeURIComponent(value || '');
+      });
+      return params;
+    }
+
+    // ========== 数据 ==========
+
+    let taskId = '';
+    let postId = '';
+    let otherUserId = '';
+    let taskInfo = { title: '', status: '' };
+    let messages = [];
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      // 获取用户信息
+      const hashParams = getHashParams();
+      if (hashParams.openid) {
+        userInfo = { openid: hashParams.openid, id: hashParams.userId };
+      }
+
+      // 获取参数
+      const queryParams = getQueryParams();
+      taskId = queryParams.taskId;
+      postId = queryParams.postId;
+      otherUserId = queryParams.otherUserId;
+
+      if (!taskId) {
+        document.getElementById('taskTitle').textContent = '参数错误';
+        document.getElementById('messageList').innerHTML = '<div class="empty">对话不存在</div>';
+        return;
+      }
+
+      await loadTaskInfo();
+      await loadMessages();
+
+      // 滚动到底部
+      scrollToBottom();
+    });
+
+    async function loadTaskInfo() {
+      if (postId) {
+        const res = await window.API.getPostDetail(postId);
+        if (res.success) {
+          taskInfo.title = res.data.title;
+          taskInfo.status = res.data.status || '进行中';
+        } else {
+          taskInfo.title = '任务';
+          taskInfo.status = '进行中';
+        }
+      }
+
+      document.getElementById('taskTitle').textContent = taskInfo.title;
+      document.getElementById('taskStatus').textContent = taskInfo.status;
+    }
+
+    async function loadMessages() {
+      const res = await window.API.getChatMessages(taskId);
+      messages = res.success ? res.data : [];
+
+      const list = document.getElementById('messageList');
+
+      if (messages.length === 0) {
+        list.innerHTML = '<div class="empty">暂无消息，开始聊天吧~</div>';
+        return;
+      }
+
+      list.innerHTML = messages.map(msg => {
+        const isSelf = msg.sender.id === userInfo?.id;
+        return `
+          <div class="message-item ${isSelf ? 'self' : 'other'}">
+            ${!isSelf ? `<img class="msg-avatar" src="https://fp1.mingdaoyun.cn/customIcon/0_lego.svg">` : ''}
+            <div class="msg-content-wrap">
+              <div class="message-bubble">${msg.content}</div>
+              <div class="message-time">${msg.created_at}</div>
+            </div>
+            ${isSelf ? `<img class="msg-avatar" src="${userInfo?.avatar || 'https://fp1.mingdaoyun.cn/customIcon/0_lego.svg'}">` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function scrollToBottom() {
+      const list = document.getElementById('messageList');
+      list.scrollTop = list.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('inputText');
+      const text = input.value.trim();
+
+      if (!text) return;
+
+      if (!userInfo) {
+        if (isInMiniProgram()) {
+          postMessage({ type: 'login' });
+        } else {
+          alert('请先登录');
+        }
+        return;
+      }
+
+      // 发送消息
+      const res = await window.API.sendChatMessage(taskId, userInfo.id, otherUserId, text);
+
+      if (res.success) {
+        input.value = '';
+        await loadMessages();
+        scrollToBottom();
+      } else {
+        alert('发送失败');
+      }
+    }
+
+    // 回车发送
+    document.getElementById('inputText')?.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+
+    function goToPost() {
+      if (postId) {
+        if (isInMiniProgram()) {
+          navigateTo('/pages/post/post?id=' + postId);
+        } else {
+          window.location.href = './post.html?id=' + postId;
+        }
+      }
+    }
+  </script>
+</body>
+
+</html>
