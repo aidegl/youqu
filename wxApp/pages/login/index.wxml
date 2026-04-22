@@ -1,0 +1,12 @@
+<view class="login-page">
+  <view class="login-header">
+    <image class="logo" src="https://fp1.mingdaoyun.cn/customIcon/0_lego.svg"></image>
+    <text class="title">友趣校园</text>
+  </view>
+
+  <view class="login-content">
+    <text class="hint">登录后可使用完整功能</text>
+    <button class="login-btn" bindtap="doLogin">微信登录</button>
+    <button class="cancel-btn" bindtap="goBack">暂不登录</button>
+  </view>
+</view>

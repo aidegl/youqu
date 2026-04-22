@@ -1,0 +1,54 @@
+.login-page {
+  padding: 50px 20px;
+  text-align: center;
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.login-header {
+  margin-bottom: 40px;
+}
+
+.logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 16px;
+}
+
+.title {
+  display: block;
+  font-size: 24px;
+  color: #333;
+  margin-top: 16px;
+}
+
+.login-content {
+  padding: 20px;
+}
+
+.hint {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.login-btn {
+  background: #3054EB;
+  color: #fff;
+  width: 200px;
+  height: 44px;
+  line-height: 44px;
+  border-radius: 22px;
+  font-size: 16px;
+}
+
+.cancel-btn {
+  background: #f5f5f5;
+  color: #666;
+  width: 200px;
+  height: 44px;
+  line-height: 44px;
+  border-radius: 22px;
+  font-size: 14px;
+  margin-top: 16px;
+}

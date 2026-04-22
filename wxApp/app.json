@@ -1,9 +1,10 @@
 {
   "pages": [
-    "pages/webview/index"
+    "pages/webview/index",
+    "pages/login/index"
   ],
   "window": {
-    "navigationBarTitleText": "友趣培训",
+    "navigationBarTitleText": "友趣校园",
     "navigationBarBackgroundColor": "#3054EB",
     "navigationBarTextStyle": "white"
   },

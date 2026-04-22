@@ -7,72 +7,112 @@
   <meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
   <title>友趣员工培训</title>
 
-  <!-- JSSDK -->
   <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
 
-  <link rel="stylesheet" href="./css/styles.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f5f5; min-height: 100vh; }
+    .container { min-height: 100vh; background: #f5f5f5; padding-bottom: 50px; }
+
+    /* 头部 */
+    .header { padding: 12px 15px; background: #3054EB; color: #fff; }
+    .header-title { font-size: 18px; font-weight: 600; }
+
+    /* 统计卡片 */
+    .stats-card { display: flex; background: rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; margin-top: 10px; }
+    .stat-item { flex: 1; text-align: center; }
+    .stat-value { font-size: 20px; font-weight: 600; }
+    .stat-label { font-size: 11px; opacity: 0.8; }
+
+    /* 快捷入口 */
+    .quick-actions { display: flex; background: #fff; border-radius: 8px; padding: 12px; margin: 10px 15px; }
+    .action-item { flex: 1; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+    .action-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 4px; }
+    .action-icon.blue { background: #E3F2FD; }
+    .action-icon.orange { background: #FFF3E0; }
+    .action-icon.green { background: #E8F5E9; }
+    .action-icon.purple { background: #F3E5F5; }
+    .action-text { font-size: 12px; color: #666; }
+
+    /* 考试入口 */
+    .exam-card { background: linear-gradient(135deg, #FF9800, #FFB74D); border-radius: 8px; padding: 12px 15px; margin: 10px 15px; color: #fff; cursor: pointer; }
+    .exam-header { display: flex; align-items: center; }
+    .exam-icon { font-size: 24px; margin-right: 8px; }
+    .exam-title { font-size: 16px; font-weight: 600; }
+    .exam-desc { font-size: 12px; opacity: 0.9; margin-top: 4px; }
+    .exam-btn { display: inline-block; padding: 6px 12px; background: rgba(255,255,255,0.3); border-radius: 4px; font-size: 12px; margin-top: 8px; }
+
+    /* 课程区域 */
+    .section { margin: 10px 15px; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .section-title { font-size: 15px; font-weight: 600; color: #333; }
+    .section-more { font-size: 12px; color: #3054EB; cursor: pointer; }
+
+    .course-card { display: flex; background: #fff; border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer; }
+    .course-card.completed { background: #E8F5E9; }
+    .course-icon { width: 40px; height: 40px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px; background: #f5f5f5; margin-right: 10px; }
+    .course-info { flex: 1; }
+    .course-top { display: flex; align-items: center; justify-content: space-between; }
+    .course-title { font-size: 14px; font-weight: 500; color: #333; }
+    .course-status { font-size: 10px; padding: 2px 6px; border-radius: 2px; }
+    .course-status.done { background: #4CAF50; color: #fff; }
+    .course-status.progress { background: #FF9800; color: #fff; }
+    .course-status.new { background: #eee; color: #666; }
+    .course-status.required { background: #E91E63; color: #fff; }
+    .course-meta { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+    .course-duration { font-size: 11px; color: #999; }
+    .progress-bar { width: 60px; height: 4px; background: #eee; border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #4CAF50; border-radius: 2px; }
+    .progress-text { font-size: 11px; color: #666; }
+
+    /* 学习记录 */
+    .record-card { background: #fff; border-radius: 8px; padding: 12px; margin: 10px 15px; }
+    .record-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .record-title { font-size: 14px; font-weight: 600; color: #333; }
+    .record-time { font-size: 11px; color: #999; }
+    .record-list { max-height: 120px; overflow-y: auto; }
+    .record-item { display: flex; align-items: center; padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
+    .record-icon { font-size: 14px; margin-right: 6px; }
+    .record-text { flex: 1; font-size: 12px; color: #666; }
+    .record-date { font-size: 11px; color: #999; }
+
+    /* 底部导航 */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 50px; background: #fff; display: flex; border-top: 1px solid #eee; z-index: 99; }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #999; font-size: 12px; cursor: pointer; }
+    .nav-item.active { color: #3054EB; }
+    .nav-icon { width: 20px; height: 20px; margin-bottom: 2px; }
+
+    /* 底部版权 */
+    .footer { text-align: center; padding: 20px; color: #999; font-size: 11px; }
+  </style>
 </head>
 
 <body>
   <div class="container">
     <!-- 头部区域 -->
     <header class="header">
-      <div class="header-top">
-        <div class="header-title">📚 友趣员工培训</div>
-        <div class="header-user">
-          <div class="user-avatar">👤</div>
-          <div class="user-name">新员工</div>
-        </div>
-      </div>
-      <!-- 统计卡片 -->
+      <div class="header-title">📚 友趣员工培训</div>
       <div class="stats-card">
-        <div class="stat-item">
-          <div class="stat-value">12</div>
-          <div class="stat-label">必修课程</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">3</div>
-          <div class="stat-label">已完成</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">8.5h</div>
-          <div class="stat-label">学习时长</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">85%</div>
-          <div class="stat-label">进度</div>
-        </div>
+        <div class="stat-item"><div class="stat-value">5</div><div class="stat-label">必修课程</div></div>
+        <div class="stat-item"><div class="stat-value">1</div><div class="stat-label">已完成</div></div>
+        <div class="stat-item"><div class="stat-value">2.5h</div><div class="stat-label">学习时长</div></div>
+        <div class="stat-item"><div class="stat-value">20%</div><div class="stat-label">进度</div></div>
       </div>
     </header>
 
     <!-- 快捷入口 -->
     <div class="quick-actions">
-      <div class="action-item" onclick="goToCourses()">
-        <div class="action-icon blue">📖</div>
-        <div class="action-text">课程中心</div>
-      </div>
-      <div class="action-item" onclick="goToExam()">
-        <div class="action-icon orange">📝</div>
-        <div class="action-text">在线考试</div>
-      </div>
-      <div class="action-item" onclick="goToRecords()">
-        <div class="action-icon green">📋</div>
-        <div class="action-text">学习记录</div>
-      </div>
-      <div class="action-item" onclick="goToMaterials()">
-        <div class="action-icon purple">📁</div>
-        <div class="action-text">学习资料</div>
-      </div>
+      <div class="action-item"><div class="action-icon blue">📖</div><div class="action-text">课程中心</div></div>
+      <div class="action-item"><div class="action-icon orange">📝</div><div class="action-text">在线考试</div></div>
+      <div class="action-item"><div class="action-icon green">📋</div><div class="action-text">学习记录</div></div>
+      <div class="action-item"><div class="action-icon purple">📁</div><div class="action-text">学习资料</div></div>
     </div>
 
     <!-- 考试入口 -->
-    <div class="exam-card" onclick="goToExam()">
+    <div class="exam-card" onclick="startExam()">
       <div class="exam-header">
         <div class="exam-icon">🎯</div>
-        <div>
-          <div class="exam-title">入职考试</div>
-          <div class="exam-desc">完成必修课程后参加考试，通过后方可正式入职</div>
-        </div>
+        <div><div class="exam-title">入职考试</div><div class="exam-desc">完成必修课程后参加考试</div></div>
       </div>
       <div class="exam-btn">开始考试 →</div>
     </div>
@@ -81,76 +121,47 @@
     <section class="section">
       <div class="section-header">
         <div class="section-title">必修课程</div>
-        <div class="section-more" onclick="goToCourses()">查看全部 ›</div>
+        <div class="section-more">查看全部 ›</div>
       </div>
-      <!-- 课程分类 -->
-      <div class="category-tabs">
-        <div class="category-tab active">全部</div>
-        <div class="category-tab">未完成</div>
-        <div class="category-tab">已完成</div>
-      </div>
-      <!-- 课程列表 -->
-      <div class="course-list" id="courseList">
-        <!-- 课程由 JS 渲染 -->
-      </div>
+      <div id="courseList"></div>
     </section>
 
     <!-- 学习记录 -->
     <div class="record-card">
-      <div class="record-header">
-        <div class="record-title">近期学习记录</div>
-        <div class="record-time">今日学习 2.5h</div>
-      </div>
-      <div class="record-list" id="recordList">
-        <!-- 记录由 JS 渲染 -->
-      </div>
-    </div>
-
-    <!-- 学习排行榜 -->
-    <div class="rank-card">
-      <div class="rank-header">
-        <div class="rank-title">学习排行榜</div>
-        <div class="rank-more" onclick="goToRank()">更多 ›</div>
-      </div>
-      <div class="rank-list" id="rankList">
-        <!-- 排行榜由 JS 渲染 -->
-      </div>
-    </div>
-
-    <!-- 常见问题 -->
-    <div class="faq-card">
-      <div class="faq-item" onclick="showFaq(1)">
-        <div class="faq-question">
-          <div class="faq-icon">❓</div>
-          <div class="faq-text">如何获取培训证书？</div>
-          <div class="faq-arrow">›</div>
-        </div>
-      </div>
-      <div class="faq-item" onclick="showFaq(2)">
-        <div class="faq-question">
-          <div class="faq-icon">❓</div>
-          <div class="faq-text">考试未通过怎么办？</div>
-          <div class="faq-arrow">›</div>
-        </div>
-      </div>
-      <div class="faq-item" onclick="showFaq(3)">
-        <div class="faq-question">
-          <div class="faq-icon">❓</div>
-          <div class="faq-text">必修课程有哪些？</div>
-          <div class="faq-arrow">›</div>
-        </div>
-      </div>
+      <div class="record-header"><div class="record-title">近期学习记录</div><div class="record-time">今日学习 2.5h</div></div>
+      <div class="record-list" id="recordList"></div>
     </div>
 
     <!-- 底部版权 -->
     <div class="footer">
       <div>友趣科技有限公司 © 2024</div>
-      <div>如有问题请联系 <span class="footer-link">培训管理员</span></div>
+    </div>
+
+    <!-- 底部导航 -->
+    <div class="bottom-nav">
+      <div class="nav-item active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span>首页</span>
+      </div>
+      <div class="nav-item" onclick="goToProfile()">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <span>我的</span>
+      </div>
     </div>
   </div>
 
-  <script src="./js/app.js"></script>
   <script>
+    // 小程序环境检测
+    function isInMiniProgram() {
+      return window.__wxjs_environment === 'miniprogram' || (window.wx && window.wx.miniProgram);
+    }
+
+    function navigateTo(url) {
+      if (isInMiniProgram() && window.wx.miniProgram) {
+        window.wx.miniProgram.navigateTo({ url });
+      }
+    }
+
     // 课程数据
     const courses = [
       { id: 1, title: '公司规章制度', icon: '📋', duration: '45分钟', progress: 100, completed: true, required: true },
@@ -160,7 +171,7 @@
       { id: 5, title: '产品知识', icon: '📦', duration: '70分钟', progress: 0, completed: false, required: true }
     ];
 
-    // 学习记录数据
+    // 学习记录
     const records = [
       { icon: '✅', text: '完成《公司规章制度》', date: '今天 14:30' },
       { icon: '📖', text: '学习《安全培训》第三章', date: '今天 11:20' },
@@ -168,153 +179,46 @@
       { icon: '📖', text: '学习《业务流程培训》第一章', date: '昨天 10:00' }
     ];
 
-    // 排行榜数据
-    const ranks = [
-      { name: '张明', score: '98分' },
-      { name: '李华', score: '95分' },
-      { name: '王芳', score: '92分' },
-      { name: '刘强', score: '88分' },
-      { name: '陈静', score: '85分' }
-    ];
-
-    // 页面初始化
+    // 渲染
     document.addEventListener('DOMContentLoaded', function() {
-      renderCourses();
-      renderRecords();
-      renderRanks();
+      // 课程列表
+      document.getElementById('courseList').innerHTML = courses.map(c => `
+        <div class="course-card ${c.completed ? 'completed' : ''}" onclick="startCourse(${c.id})">
+          <div class="course-icon">${c.icon}</div>
+          <div class="course-info">
+            <div class="course-top">
+              <div class="course-title">${c.title}</div>
+              ${c.required ? '<span class="course-status required">必修</span>' : ''}
+            </div>
+            <div class="course-meta">
+              <div class="course-duration">⏱ ${c.duration}</div>
+              <div class="progress-bar"><div class="progress-fill" style="width: ${c.progress}%"></div></div>
+              <div class="progress-text">${c.progress}%</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      // 学习记录
+      document.getElementById('recordList').innerHTML = records.map(r => `
+        <div class="record-item">
+          <div class="record-icon">${r.icon}</div>
+          <div class="record-text">${r.text}</div>
+          <div class="record-date">${r.date}</div>
+        </div>
+      `).join('');
     });
 
-    // 渲染课程列表
-    function renderCourses() {
-      const list = document.getElementById('courseList');
-      list.innerHTML = courses.map(course => `
-        <div class="course-card ${course.completed ? 'completed' : ''}" onclick="startCourse(${course.id})">
-          <div class="course-icon">${course.icon}</div>
-          <div class="course-info">
-            <div class="course-top">
-              <div class="course-title">${course.title}</div>
-              ${course.required ? '<span class="course-status required">必修</span>' : ''}
-            </div>
-            <div class="course-meta">
-              <div class="course-duration">⏱ ${course.duration}</div>
-              <div class="course-progress">
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: ${course.progress}%"></div>
-                </div>
-                <div class="progress-text">${course.progress}%</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // 渲染学习记录
-    function renderRecords() {
-      const list = document.getElementById('recordList');
-      list.innerHTML = records.map(record => `
-        <div class="record-item">
-          <div class="record-icon">${record.icon}</div>
-          <div class="record-text">${record.text}</div>
-          <div class="record-date">${record.date}</div>
-        </div>
-      `).join('');
-    }
-
-    // 渲染排行榜
-    function renderRanks() {
-      const list = document.getElementById('rankList');
-      list.innerHTML = ranks.map((rank, index) => `
-        <div class="rank-item">
-          <div class="rank-num ${index === 0 ? 'top1' : index === 1 ? 'top2' : index === 2 ? 'top3' : 'normal'}">${index + 1}</div>
-          <div class="rank-avatar">👤</div>
-          <div class="rank-name">${rank.name}</div>
-          <div class="rank-score">${rank.score}</div>
-        </div>
-      `).join('');
-    }
-
-    // 课程分类切换
-    function switchCategory(type) {
-      document.querySelectorAll('.category-tab').forEach(tab => {
-        tab.classList.remove('active');
-      });
-      event.target.classList.add('active');
-
-      let filteredCourses = courses;
-      if (type === '未完成') {
-        filteredCourses = courses.filter(c => !c.completed);
-      } else if (type === '已完成') {
-        filteredCourses = courses.filter(c => c.completed);
-      }
-      renderCoursesFiltered(filteredCourses);
-    }
-
-    function renderCoursesFiltered(filteredCourses) {
-      const list = document.getElementById('courseList');
-      if (filteredCourses.length === 0) {
-        list.innerHTML = '<div class="empty">暂无课程</div>';
-        return;
-      }
-      list.innerHTML = filteredCourses.map(course => `
-        <div class="course-card ${course.completed ? 'completed' : ''}" onclick="startCourse(${course.id})">
-          <div class="course-icon">${course.icon}</div>
-          <div class="course-info">
-            <div class="course-top">
-              <div class="course-title">${course.title}</div>
-              ${course.required ? '<span class="course-status required">必修</span>' : ''}
-            </div>
-            <div class="course-meta">
-              <div class="course-duration">⏱ ${course.duration}</div>
-              <div class="course-progress">
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: ${course.progress}%"></div>
-                </div>
-                <div class="progress-text">${course.progress}%</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // 功能跳转
     function startCourse(id) {
-      console.log('开始课程:', id);
-      if (window.webview && window.webview.isInMiniProgram()) {
-        window.webview.navigateTo('/pages/course-detail/course-detail?id=' + id);
-      } else {
-        alert('开始学习课程 #' + id);
-      }
+      navigateTo('/pages/course-detail/course-detail?id=' + id);
     }
 
-    function goToCourses() {
-      alert('查看全部课程');
+    function startExam() {
+      alert('完成所有必修课程后可参加考试');
     }
 
-    function goToExam() {
-      alert('开始在线考试');
-    }
-
-    function goToRecords() {
-      alert('查看学习记录');
-    }
-
-    function goToMaterials() {
-      alert('下载学习资料');
-    }
-
-    function goToRank() {
-      alert('查看完整排行榜');
-    }
-
-    function showFaq(id) {
-      const answers = {
-        1: '完成全部必修课程并通过考试后，系统会自动生成培训证书，可在"学习记录"中查看和下载。',
-        2: '考试未通过可重新学习相关课程，7天后可再次参加考试。每人最多有3次考试机会。',
-        3: '必修课程包括：公司规章制度、安全培训、业务流程培训、团队协作、产品知识等5门课程。'
-      };
-      alert(answers[id]);
+    function goToProfile() {
+      navigateTo('/pages/profile/profile');
     }
   </script>
 </body>
