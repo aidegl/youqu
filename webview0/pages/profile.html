@@ -291,7 +291,7 @@
       if (isInMiniProgram()) {
         navigateTo('/pages/profile-space/profile-space?id=self');
       } else {
-        alert('我的发布功能需要小程序支持');
+        window.location.href = 'profile-space.html?id=self';
       }
     }
 
@@ -304,7 +304,7 @@
       if (isInMiniProgram()) {
         navigateTo('/pages/album/album');
       } else {
-        alert('相册功能需要小程序支持');
+        window.location.href = 'album.html';
       }
     }
 
@@ -312,7 +312,7 @@
       if (isInMiniProgram()) {
         switchTab('/pages/messages/messages');
       } else {
-        window.location.href = './messages.html';
+        window.location.href = 'messages.html';
       }
     }
 

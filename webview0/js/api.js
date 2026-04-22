@@ -481,15 +481,47 @@ async function getBanners() {
 }
 
 async function getSysConfig() {
+  console.log('===== [API getSysConfig] 开始 =====');
+  console.log('[API] 调用 getRow, worksheetId:', WORKSHEET_ID.global_config);
+  console.log('[API] rowId: 23638c6a-0305-40e8-bbcf-8731439aa6b4');
+
   const result = await getRow(WORKSHEET_ID.global_config, '23638c6a-0305-40e8-bbcf-8731439aa6b4');
+
+  console.log('[API] getRow 响应:', result);
+  console.log('[API] result.success:', result.success);
+  console.log('[API] result.data:', result.data);
+
   if (result.success && result.data) {
-    const value = result.data.value || result.data['69e2a118f7066f665c4ec8f1'] || '0';
+    const rawData = result.data;
+
+    // 尝试多种方式获取配置值
+    const value = rawData['69e2a118f7066f665c4ec8f1'] || rawData.value || rawData.Value || '0';
+
+    console.log('[API] 配置值 value:', value);
+    console.log('[API] value 类型:', typeof value);
+    console.log('[API] isSpecialMode 判断: value === "1" ?', value === '1');
+
+    const isSpecialMode = value === '1' || value === 1 || value === true;
+
+    console.log('[API] isSpecialMode:', isSpecialMode);
+    console.log('===== [API getSysConfig] 完成 =====');
+
     return {
       success: true,
-      isSpecialMode: value === '1'
+      value: value,
+      isSpecialMode: isSpecialMode
     };
   }
-  return { success: false, isSpecialMode: false };
+
+  console.log('[API] getSysConfig 失败');
+  console.log('===== [API getSysConfig] 完成（失败） =====');
+
+  return {
+    success: false,
+    value: '0',
+    isSpecialMode: false,
+    error_msg: result.error_msg || '获取配置失败'
+  };
 }
 
 async function getUserPosts(userId, category = '', page = 1, pageSize = 20) {
@@ -790,6 +822,8 @@ window.API = {
   sendChatMessage,
   getUserAlbums,
   formatTime,
+  getCategoryKey,
+  getTaskTypeKey,
   WORKSHEET_ID,
   HAP_CONFIG
 };

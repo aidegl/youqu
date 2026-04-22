@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+  <title>我的相册</title>
+
+  <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+  <script src="../js/api.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f5f5; min-height: 100vh; }
+    .container { min-height: 100vh; background: #fff; }
+
+    /* 头部 */
+    .header { display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; background: #fff; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 10; }
+    .header-back { font-size: 16px; color: #333; cursor: pointer; }
+    .header-title { font-size: 18px; font-weight: 600; color: #333; }
+
+    /* 相册网格 */
+    .album-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; }
+    .album-item { position: relative; aspect-ratio: 1; overflow: hidden; cursor: pointer; }
+    .album-item img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* 空状态 */
+    .empty { text-align: center; padding: 60px 20px; color: #999; }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-text { font-size: 14px; }
+
+    /* 加载状态 */
+    .loading { text-align: center; padding: 20px; color: #999; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- 头部 -->
+    <div class="header">
+      <div class="header-back" onclick="goBack()">← 返回</div>
+      <div class="header-title">相册</div>
+      <div></div>
+    </div>
+
+    <!-- 相册网格 -->
+    <div class="album-grid" id="albumGrid">
+      <div class="loading">加载中...</div>
+    </div>
+  </div>
+
+  <script>
+    // ========== 环境检测 ==========
+
+    function isInMiniProgram() {
+      return window.__wxjs_environment === 'miniprogram' || (window.wx && window.wx.miniProgram);
+    }
+
+    function navigateBack() {
+      if (isInMiniProgram() && window.wx.miniProgram) {
+        window.wx.miniProgram.navigateBack();
+      } else {
+        window.history.back();
+      }
+    }
+
+    function postMessage(data) {
+      if (isInMiniProgram() && window.wx.miniProgram) {
+        window.wx.miniProgram.postMessage({ data });
+      }
+    }
+
+    // ========== 用户信息 ==========
+
+    let userInfo = null;
+    let targetUserId = '';
+
+    function getHashParams() {
+      const hash = window.location.hash.slice(1);
+      if (!hash) return {};
+      const params = {};
+      hash.split('&').forEach(pair => {
+        const [key, value] = pair.split('=');
+        if (key) params[key] = decodeURIComponent(value || '');
+      });
+      return params;
+    }
+
+    function getQueryParams() {
+      const search = window.location.search.slice(1);
+      if (!search) return {};
+      const params = {};
+      search.split('&').forEach(pair => {
+        const [key, value] = pair.split('=');
+        if (key) params[key] = decodeURIComponent(value || '');
+      });
+      return params;
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      // 获取当前用户信息
+      const hashParams = getHashParams();
+      if (hashParams.openid) {
+        userInfo = { openid: hashParams.openid, id: hashParams.userId };
+      }
+
+      // 获取目标用户 ID
+      const queryParams = getQueryParams();
+      targetUserId = queryParams.userId;
+
+      // 如果没有指定用户，使用当前用户
+      if (!targetUserId && userInfo) {
+        targetUserId = userInfo.id;
+      }
+
+      if (!targetUserId) {
+        document.getElementById('albumGrid').innerHTML = '<div class="empty"><div class="empty-icon">📷</div><div class="empty-text">请先登录</div></div>';
+        return;
+      }
+
+      await loadAlbums();
+    });
+
+    async function loadAlbums() {
+      const grid = document.getElementById('albumGrid');
+      grid.innerHTML = '<div class="loading">加载中...</div>';
+
+      const res = await window.API.getUserAlbums(targetUserId);
+
+      if (res.success && res.data.length > 0) {
+        grid.innerHTML = res.data.map(album => `
+          <div class="album-item" onclick="previewImage('${album.image}')">
+            <img src="${album.image}" alt="photo">
+          </div>
+        `).join('');
+      } else {
+        grid.innerHTML = '<div class="empty"><div class="empty-icon">📷</div><div class="empty-text">暂无照片</div></div>';
+      }
+    }
+
+    function previewImage(url) {
+      if (isInMiniProgram()) {
+        postMessage({ type: 'previewImage', current: url, urls: [url] });
+      } else {
+        window.open(url, '_blank');
+      }
+    }
+
+    function goBack() {
+      navigateBack();
+    }
+  </script>
+</body>
+
+</html>

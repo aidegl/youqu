@@ -8,8 +8,8 @@
   <title>友趣校园</title>
 
   <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
-  <script src="../js/api.js"></script>
-  <script src="../js/app.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/app.js"></script>
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -157,17 +157,6 @@
       return params;
     }
 
-    function getQueryParams() {
-      const search = window.location.search.slice(1);
-      if (!search) return {};
-      const params = {};
-      search.split('&').forEach(pair => {
-        const [key, value] = pair.split('=');
-        if (key) params[key] = decodeURIComponent(value || '');
-      });
-      return params;
-    }
-
     function initUserInfo() {
       const hashParams = getHashParams();
       if (hashParams.openid) {
@@ -190,6 +179,7 @@
     let loading = false;
 
     document.addEventListener('DOMContentLoaded', async function() {
+      console.log('[H5] websh.html DOMContentLoaded');
       initUserInfo();
 
       await loadBanners();
@@ -200,7 +190,9 @@
     // ========== 数据加载 ==========
 
     async function loadBanners() {
+      console.log('[H5] loadBanners 开始...');
       const res = await window.API.getBanners();
+      console.log('[H5] getBanners 响应:', res);
       const swiper = document.getElementById('bannerSwiper');
 
       if (res.success && res.data.length > 0) {
@@ -233,6 +225,7 @@
       if (loadMore && !hasMore) return;
 
       loading = true;
+      console.log('[H5] loadPosts 开始, category:', currentCategory, 'page:', page);
       const list = document.getElementById('postsList');
 
       if (!loadMore) {
@@ -241,6 +234,7 @@
       }
 
       const res = await window.API.getPosts(currentCategory, page, 10);
+      console.log('[H5] getPosts 响应:', res);
 
       if (res.success && res.data.length > 0) {
         const posts = res.data;
@@ -273,7 +267,6 @@
         `).join('');
 
         if (loadMore) {
-          // 移除旧的"没有更多了"提示，追加新内容
           const existingContent = list.innerHTML.replace('<div class="no-more">没有更多了</div>', '');
           list.innerHTML = existingContent + html;
         } else {
@@ -355,12 +348,6 @@
         loadPosts(true);
       }
     });
-
-    // ========== 下拉刷新（小程序环境） ==========
-
-    if (isInMiniProgram() && window.wx.miniProgram) {
-      // 小程序会通过 postMessage 通知刷新
-    }
   </script>
 </body>
 

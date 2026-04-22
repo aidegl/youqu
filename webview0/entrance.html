@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+  <title>友趣校园</title>
+
+  <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+  <script src="./js/api.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f5f5; min-height: 100vh; }
+
+    /* 加载状态 */
+    .loading-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; background: #f5f5f5; }
+    .loading-text { font-size: 16px; color: #666; }
+    .loading-spinner { width: 40px; height: 40px; border: 3px solid #ddd; border-top-color: #3054EB; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+      </style>
+</head>
+
+<body>
+  <!-- 加载状态 -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">加载中...</div>
+  </div>
+
+  
+  <!-- 页面容器 -->
+  <div id="appContainer"></div>
+
+  <script>
+    // ========== 调试日志 ==========
+
+    function debugLog(text, type = 'info') {
+      // 只输出到控制台
+      const prefix = type === 'error' ? '[ERROR] ' : type === 'success' ? '[SUCCESS] ' : '[INFO] ';
+      console.log(prefix + text);
+    }
+
+    // ========== 环境检测 ==========
+
+    function isInMiniProgram() {
+      // 严格判断：必须在微信小程序环境中，且有 navigateTo 方法
+      const env = window.__wxjs_environment;
+      const hasWx = window.wx && window.wx.miniProgram;
+      const hasNavigate = hasWx && typeof window.wx.miniProgram.navigateTo === 'function';
+      return env === 'miniprogram' && hasNavigate;
+    }
+
+    function postMessage(data) {
+      if (isInMiniProgram() && window.wx.miniProgram) {
+        window.wx.miniProgram.postMessage({ data });
+      }
+    }
+
+    function navigateTo(url) {
+      if (isInMiniProgram() && window.wx.miniProgram) {
+        window.wx.miniProgram.navigateTo({ url });
+      }
+    }
+
+    // ========== 用户信息（从 hash 获取） ==========
+
+    let userInfo = null;
+
+    function getHashParams() {
+      const hash = window.location.hash.slice(1);
+      if (!hash) return {};
+      const params = {};
+      hash.split('&').forEach(pair => {
+        const [key, value] = pair.split('=');
+        if (key) params[key] = decodeURIComponent(value || '');
+      });
+      return params;
+    }
+
+    // ========== 功能函数（全局作用域） - 必须在渲染前定义 ==========
+
+    // 点击帖子卡片跳转详情
+    window.goToDetail = function(id) {
+      console.log('[Entrance] goToDetail called, id:', id);
+      if (isInMiniProgram()) {
+        navigateTo('/pages/post/post?id=' + id);
+      } else {
+        window.location.href = 'pages/post.html?id=' + id;
+      }
+    };
+
+    // 点击消息按钮
+    window.goToMessages = function() {
+      console.log('[Entrance] goToMessages called');
+      if (isInMiniProgram()) {
+        navigateTo('/pages/messages/messages');
+      } else {
+        window.location.href = 'pages/messages.html';
+      }
+    };
+
+    // 点击我的按钮
+    window.goToProfile = function() {
+      console.log('[Entrance] goToProfile called');
+      if (isInMiniProgram()) {
+        navigateTo('/pages/profile/profile');
+      } else {
+        window.location.href = 'pages/profile.html';
+      }
+    };
+
+    // 点击发布按钮
+    window.goToPublish = function() {
+      console.log('[Entrance] goToPublish called');
+      if (!userInfo) {
+        debugLog('[Community] 未登录，请求小程序登录', 'info');
+        postMessage({ type: 'login' });
+        return;
+      }
+      if (isInMiniProgram()) {
+        navigateTo('/pages/publish/publish');
+      } else {
+        window.location.href = 'pages/publish.html';
+      }
+    };
+
+    // 分类切换
+    window.switchCategory = async function(cat) {
+      console.log('[Entrance] switchCategory:', cat);
+      document.querySelectorAll('.category-item').forEach(item => {
+        const itemCat = item.textContent.trim();
+        const expectedCat = cat || '全部';
+        if (itemCat === expectedCat) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+
+      const postsList = document.getElementById('postsList');
+      if (postsList) {
+        postsList.innerHTML = '<div style="text-align:center;padding:20px;color:#999;">加载中...</div>';
+        const res = await window.API.getPosts(cat, 1, 10);
+        if (res.success && res.data.length > 0) {
+          postsList.innerHTML = res.data.map(post => `
+            <div class="post-card" onclick="goToDetail('${post.id}')">
+              ${post.cover ? `<div class="post-cover"><img src="${post.cover}" alt="cover"></div>` : ''}
+              <div class="post-main">
+                <div class="post-title-row">
+                  <div class="post-title">${post.title}</div>
+                  ${post.category === '赏金任务' ? `<div class="bounty-info"><span class="bounty-tag">【${post.task_type}】</span><span class="bounty-amount">¥${post.bounty_amount}</span></div>` : ''}
+                </div>
+                <div class="post-desc">${post.content}</div>
+                <div class="post-header">
+                  <img class="author-avatar" src="${post.author.avatar}" alt="avatar">
+                  <span class="author-name">${post.author.nickname}</span>
+                  <span class="post-time">${post.created_at}</span>
+                  <span class="post-category ${post.category === '赏金任务' ? 'bounty' : post.category === '问答' ? 'qa' : 'rant'}">${post.category}</span>
+                </div>
+                <div class="post-footer">
+                  <div class="footer-item">👍 ${post.likes_count}</div>
+                  <div class="footer-item">💬 ${post.comments_count}</div>
+                  <div class="footer-item">👁️ ${post.views_count || 0}</div>
+                </div>
+              </div>
+            </div>
+          `).join('') + '<div style="text-align:center;padding:15px;color:#999;font-size:13px;">没有更多了</div>';
+        } else {
+          postsList.innerHTML = '<div class="empty">暂无内容</div>';
+        }
+      }
+    };
+
+    // 培训页假登录
+    window.showLoginModal = function() {
+      document.getElementById('loginModal').classList.add('show');
+      document.getElementById('empId').value = '';
+      document.getElementById('empPwd').value = '';
+      document.getElementById('loginError').classList.remove('show');
+    };
+
+    window.hideLoginModal = function() {
+      document.getElementById('loginModal').classList.remove('show');
+    };
+
+    window.doFakeLogin = function() {
+      document.getElementById('loginError').classList.add('show');
+    };
+
+    // ========== 页面初始化 ==========
+
+    let auditMode = null; // 审核状态：true=审核模式，false=正常模式
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      debugLog('===== [Entrance] 页面初始化开始 =====', 'info');
+      debugLog(`[Entrance] 当前时间: ${new Date().toISOString()}`, 'info');
+      debugLog(`[Entrance] URL: ${window.location.href}`, 'info');
+      debugLog(`[Entrance] hash: ${window.location.hash}`, 'info');
+      debugLog(`[Entrance] isInMiniProgram: ${isInMiniProgram()}`, 'info');
+
+      // 获取用户信息
+      const hashParams = getHashParams();
+      if (hashParams.openid) {
+        userInfo = { openid: hashParams.openid, id: hashParams.userId };
+        debugLog(`[Entrance] 从 hash 获取用户信息: openid=${hashParams.openid}, userId=${hashParams.userId}`, 'success');
+      } else {
+        debugLog('[Entrance] hash 中无用户信息', 'info');
+      }
+
+      // 获取审核状态
+      debugLog('===== [Entrance] 开始获取审核状态 =====', 'info');
+      await loadAuditStatus();
+
+      // 根据审核状态显示页面
+      debugLog('===== [Entrance] 根据审核状态显示页面 =====', 'info');
+      renderPage();
+    });
+
+    // ========== 获取审核状态 ==========
+
+    async function loadAuditStatus() {
+      debugLog('[Entrance] 调用 API.getSysConfig...', 'info');
+
+      try {
+        const res = await window.API.getSysConfig();
+
+        debugLog('===== [Entrance] API.getSysConfig 响应 =====', 'info');
+        debugLog(`[Entrance] res.success: ${res.success}`, res.success ? 'success' : 'error');
+        debugLog(`[Entrance] res.value: ${res.value}`, 'info');
+        debugLog(`[Entrance] res.isSpecialMode: ${res.isSpecialMode}`, res.isSpecialMode ? 'error' : 'success');
+
+        if (res.success) {
+          // value = "1" 表示审核模式（显示培训页）
+          // value = "0" 表示正常模式（显示社区页）
+          auditMode = res.isSpecialMode;
+
+          debugLog(`[Entrance] auditMode 设置为: ${auditMode}`, auditMode ? 'error' : 'success');
+          debugLog(`[Entrance] auditMode 类型: ${typeof auditMode}`, 'info');
+          debugLog(`[Entrance] auditMode === true: ${auditMode === true}`, 'info');
+          debugLog(`[Entrance] auditMode === false: ${auditMode === false}`, 'info');
+
+          debugLog(`===== [Entrance] 审核状态判断结果 =====`, 'info');
+          if (auditMode === true) {
+            debugLog('[Entrance] 显示页面: 培训页（审核模式）', 'error');
+            debugLog('[Entrance] HAP 配置值为 "1"，表示正在审核', 'error');
+          } else {
+            debugLog('[Entrance] 显示页面: 社区页（正常模式）', 'success');
+            debugLog('[Entrance] HAP 配置值为 "0"，表示审核已通过', 'success');
+          }
+        } else {
+          debugLog(`[Entrance] API 失败: ${res.error_msg}`, 'error');
+          debugLog('[Entrance] 默认显示社区页', 'success');
+          auditMode = false;
+        }
+
+      } catch (e) {
+        debugLog(`[Entrance] 获取审核状态异常: ${e.message}`, 'error');
+        debugLog('[Entrance] 默认显示社区页', 'success');
+        auditMode = false;
+      }
+    }
+
+    // ========== 渲染页面 ==========
+
+    async function renderPage() {
+      const container = document.getElementById('appContainer');
+      const loading = document.getElementById('loadingScreen');
+
+      // 隐藏加载状态
+      loading.style.display = 'none';
+
+      if (auditMode === true) {
+        // 审核模式：显示培训页
+        debugLog('[Entrance] 渲染培训页...', 'info');
+        await renderTrainingPage(container);
+      } else {
+        // 正常模式：显示社区页
+        debugLog('[Entrance] 渲染社区页...', 'info');
+        await renderCommunityPage(container);
+      }
+    }
+
+    // ========== 培训页（审核模式） ==========
+
+    async function renderTrainingPage(container) {
+      container.innerHTML = `
+        <style>
+          .training-container { min-height: 100vh; background: #f5f5f5; padding-bottom: 20px; }
+          .header { padding: 12px 15px; background: #3054EB; color: #fff; }
+          .header-title { font-size: 18px; font-weight: 600; }
+          .stats-card { display: flex; background: rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; margin-top: 10px; }
+          .stat-item { flex: 1; text-align: center; }
+          .stat-value { font-size: 20px; font-weight: 600; }
+          .stat-label { font-size: 11px; opacity: 0.8; }
+          .quick-actions { display: flex; background: #fff; border-radius: 8px; padding: 12px; margin: 10px 15px; }
+          .action-item { flex: 1; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+          .action-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 4px; }
+          .action-icon.blue { background: #E3F2FD; }
+          .action-icon.orange { background: #FFF3E0; }
+          .action-icon.green { background: #E8F5E9; }
+          .action-icon.purple { background: #F3E5F5; }
+          .action-text { font-size: 12px; color: #666; }
+          .exam-card { background: linear-gradient(135deg, #FF9800, #FFB74D); border-radius: 8px; padding: 12px 15px; margin: 10px 15px; color: #fff; cursor: pointer; }
+          .exam-header { display: flex; align-items: center; }
+          .exam-icon { font-size: 24px; margin-right: 8px; }
+          .exam-title { font-size: 16px; font-weight: 600; }
+          .exam-desc { font-size: 12px; opacity: 0.9; margin-top: 4px; }
+          .exam-btn { display: inline-block; padding: 6px 12px; background: rgba(255,255,255,0.3); border-radius: 4px; font-size: 12px; margin-top: 8px; }
+          .section { margin: 10px 15px; }
+          .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+          .section-title { font-size: 15px; font-weight: 600; color: #333; }
+          .section-more { font-size: 12px; color: #3054EB; cursor: pointer; }
+          .course-card { display: flex; background: #fff; border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer; }
+          .course-card.completed { background: #E8F5E9; }
+          .course-icon { width: 40px; height: 40px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px; background: #f5f5f5; margin-right: 10px; }
+          .course-info { flex: 1; }
+          .course-top { display: flex; align-items: center; justify-content: space-between; }
+          .course-title { font-size: 14px; font-weight: 500; color: #333; }
+          .course-status { font-size: 10px; padding: 2px 6px; border-radius: 2px; }
+          .course-status.done { background: #4CAF50; color: #fff; }
+          .course-status.progress { background: #FF9800; color: #fff; }
+          .course-status.required { background: #E91E63; color: #fff; }
+          .course-meta { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+          .course-duration { font-size: 11px; color: #999; }
+          .progress-bar { width: 60px; height: 4px; background: #eee; border-radius: 2px; overflow: hidden; }
+          .progress-fill { height: 100%; background: #4CAF50; border-radius: 2px; }
+          .progress-text { font-size: 11px; color: #666; }
+          .record-card { background: #fff; border-radius: 8px; padding: 12px; margin: 10px 15px; }
+          .record-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+          .record-title { font-size: 14px; font-weight: 600; color: #333; }
+          .record-time { font-size: 11px; color: #999; }
+          .record-list { max-height: 120px; overflow-y: auto; }
+          .record-item { display: flex; align-items: center; padding: 6px 0; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+          .record-icon { font-size: 14px; margin-right: 6px; }
+          .record-text { flex: 1; font-size: 12px; color: #666; }
+          .record-date { font-size: 11px; color: #999; }
+          .footer { text-align: center; padding: 20px; color: #999; font-size: 11px; }
+          .login-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+          .login-modal.show { display: flex; }
+          .login-box { background: #fff; border-radius: 12px; padding: 24px; width: 280px; text-align: center; }
+          .login-box-title { font-size: 18px; font-weight: 600; color: #333; margin-bottom: 20px; }
+          .login-input { width: 100%; height: 44px; border: 1px solid #ddd; border-radius: 8px; padding: 0 12px; font-size: 14px; margin-bottom: 12px; outline: none; }
+          .login-btn { width: 100%; height: 44px; background: #3054EB; color: #fff; border-radius: 8px; font-size: 16px; border: none; cursor: pointer; margin-top: 8px; }
+          .login-close { font-size: 12px; color: #999; margin-top: 16px; cursor: pointer; }
+          .login-error { display: none; color: #E91E63; font-size: 13px; margin-top: 12px; }
+          .login-error.show { display: block; }
+        </style>
+
+        <div class="training-container">
+          <header class="header">
+            <div class="header-title">友趣员工培训</div>
+            <div class="stats-card">
+              <div class="stat-item"><div class="stat-value">5</div><div class="stat-label">必修课程</div></div>
+              <div class="stat-item"><div class="stat-value">1</div><div class="stat-label">已完成</div></div>
+              <div class="stat-item"><div class="stat-value">2.5h</div><div class="stat-label">学习时长</div></div>
+              <div class="stat-item"><div class="stat-value">20%</div><div class="stat-label">进度</div></div>
+            </div>
+          </header>
+
+          <div class="quick-actions">
+            <div class="action-item" onclick="showLoginModal()"><div class="action-icon blue">📖</div><div class="action-text">课程中心</div></div>
+            <div class="action-item" onclick="showLoginModal()"><div class="action-icon orange">📝</div><div class="action-text">在线考试</div></div>
+            <div class="action-item" onclick="showLoginModal()"><div class="action-icon green">📋</div><div class="action-text">学习记录</div></div>
+            <div class="action-item" onclick="showLoginModal()"><div class="action-icon purple">📁</div><div class="action-text">学习资料</div></div>
+          </div>
+
+          <div class="exam-card" onclick="showLoginModal()">
+            <div class="exam-header">
+              <div class="exam-icon">🎯</div>
+              <div><div class="exam-title">入职考试</div><div class="exam-desc">完成必修课程后参加考试</div></div>
+            </div>
+            <div class="exam-btn">开始考试 →</div>
+          </div>
+
+          <section class="section">
+            <div class="section-header">
+              <div class="section-title">必修课程</div>
+              <div class="section-more" onclick="showLoginModal()">查看全部 ›</div>
+            </div>
+            <div id="courseList"></div>
+          </section>
+
+          <div class="record-card">
+            <div class="record-header"><div class="record-title">近期学习记录</div><div class="record-time">今日学习 2.5h</div></div>
+            <div class="record-list" id="recordList"></div>
+          </div>
+
+          <div class="footer">友趣科技有限公司 © 2024</div>
+        </div>
+
+        <div class="login-modal" id="loginModal">
+          <div class="login-box">
+            <div class="login-box-title">员工登录</div>
+            <input type="text" class="login-input" id="empId" placeholder="请输入员工号" maxlength="20">
+            <input type="password" class="login-input" id="empPwd" placeholder="请输入密码" maxlength="20">
+            <button class="login-btn" onclick="doFakeLogin()">登录</button>
+            <div class="login-error" id="loginError">员工号或密码错误</div>
+            <div class="login-close" onclick="hideLoginModal()">取消</div>
+          </div>
+        </div>
+      `;
+
+      // 课程数据
+      const courses = [
+        { id: 1, title: '公司规章制度', icon: '📋', duration: '45分钟', progress: 100, completed: true },
+        { id: 2, title: '安全培训', icon: '🛡️', duration: '60分钟', progress: 80, completed: false },
+        { id: 3, title: '业务流程培训', icon: '📊', duration: '90分钟', progress: 50, completed: false },
+        { id: 4, title: '团队协作', icon: '👥', duration: '50分钟', progress: 30, completed: false },
+        { id: 5, title: '产品知识', icon: '📦', duration: '70分钟', progress: 0, completed: false }
+      ];
+
+      // 学习记录
+      const records = [
+        { icon: '✅', text: '完成《公司规章制度》', date: '今天 14:30' },
+        { icon: '📖', text: '学习《安全培训》第三章', date: '今天 11:20' },
+        { icon: '📝', text: '通过章节测验', date: '昨天 16:45' },
+        { icon: '📖', text: '学习《业务流程培训》第一章', date: '昨天 10:00' }
+      ];
+
+      // 渲染课程
+      document.getElementById('courseList').innerHTML = courses.map(c => `
+        <div class="course-card ${c.completed ? 'completed' : ''}" onclick="showLoginModal()">
+          <div class="course-icon">${c.icon}</div>
+          <div class="course-info">
+            <div class="course-top">
+              <div class="course-title">${c.title}</div>
+              <span class="course-status required">必修</span>
+            </div>
+            <div class="course-meta">
+              <div class="course-duration">⏱ ${c.duration}</div>
+              <div class="progress-bar"><div class="progress-fill" style="width: ${c.progress}%"></div></div>
+              <div class="progress-text">${c.progress}%</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      // 渲染记录
+      document.getElementById('recordList').innerHTML = records.map(r => `
+        <div class="record-item" onclick="showLoginModal()">
+          <div class="record-icon">${r.icon}</div>
+          <div class="record-text">${r.text}</div>
+          <div class="record-date">${r.date}</div>
+        </div>
+      `).join('');
+
+      debugLog('[Entrance] 培训页渲染完成', 'success');
+    }
+
+    // ========== 社区页（正常模式） ==========
+
+    async function renderCommunityPage(container) {
+      debugLog('[Entrance] 加载社区页数据...', 'info');
+
+      // 加载轮播图和帖子
+      const [bannersRes, postsRes] = await Promise.all([
+        window.API.getBanners(),
+        window.API.getPosts('', 1, 10)
+      ]);
+
+      debugLog(`[Entrance] 轮播图: ${bannersRes.success ? bannersRes.data.length + '个' : '加载失败'}`, bannersRes.success ? 'success' : 'error');
+      debugLog(`[Entrance] 帖子: ${postsRes.success ? postsRes.data.length + '条' : '加载失败'}`, postsRes.success ? 'success' : 'error');
+
+      const banners = bannersRes.success ? bannersRes.data : [];
+      const posts = postsRes.success ? postsRes.data : [];
+
+      container.innerHTML = `
+        <style>
+          .community-container { min-height: 100vh; background: #f5f5f5; padding-bottom: 60px; }
+          .banner-swiper { height: 180px; overflow: hidden; position: relative; }
+          .banner-slide { height: 180px; background: #f5f5f5; cursor: pointer; }
+          .banner-image { width: 100%; height: 100%; object-fit: cover; }
+          .category-scroll { background: #fff; padding: 10px 0; border-bottom: 1px solid #eee; white-space: nowrap; overflow-x: auto; }
+          .category-list { display: flex; padding: 0 10px; }
+          .category-item { flex-shrink: 0; padding: 6px 16px; margin-right: 10px; border-radius: 16px; font-size: 14px; color: #666; background: #f5f5f5; cursor: pointer; }
+          .category-item.active { background: #3054EB; color: #fff; }
+          .posts-list { padding: 10px; padding-bottom: 60px; }
+          .post-card { display: flex; background: #fff; border-radius: 8px; padding: 12px; margin-bottom: 10px; gap: 10px; cursor: pointer; pointer-events: auto; }
+          .post-cover { width: 120px; height: 90px; border-radius: 6px; overflow: hidden; flex-shrink: 0; }
+          .post-cover img { width: 100%; height: 100%; object-fit: cover; }
+          .post-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+          .post-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; margin-bottom: 4px; }
+          .post-title { flex: 1; font-size: 15px; font-weight: 600; color: #333; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+          .bounty-info { display: flex; align-items: center; flex-shrink: 0; }
+          .bounty-tag { font-size: 12px; color: #FF9800; }
+          .bounty-amount { font-size: 14px; color: #FF5722; font-weight: 600; }
+          .post-desc { font-size: 12px; color: #666; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 6px; }
+          .post-header { display: flex; align-items: center; gap: 6px; margin-top: auto; pointer-events: none; }
+          .author-avatar { width: 20px; height: 20px; border-radius: 50%; }
+          .author-name { font-size: 12px; color: #333; }
+          .post-time { font-size: 10px; color: #999; margin-left: 6px; }
+          .post-category { padding: 3px 6px; border-radius: 4px; font-size: 10px; }
+          .post-category.bounty { background: #FFF3E0; color: #FF9800; }
+          .post-category.qa { background: #E3F2FD; color: #2196F3; }
+          .post-category.rant { background: #FCE4EC; color: #E91E63; }
+          .post-footer { display: flex; padding-top: 6px; border-top: 1px solid #f0f0f0; margin-top: 6px; pointer-events: none; }
+          .footer-item { display: flex; align-items: center; margin-right: 16px; color: #999; font-size: 12px; }
+          .float-publish-btn { position: fixed; right: 15px; bottom: 70px; width: 50px; height: 50px; background: linear-gradient(135deg, #3054EB, #4A7AF7); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(48, 84, 235, 0.4); z-index: 100; cursor: pointer; }
+          .publish-icon { color: #fff; font-size: 24px; }
+          .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 50px; background: #fff; display: flex; border-top: 1px solid #eee; z-index: 999; }
+          .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #999; font-size: 12px; cursor: pointer; pointer-events: auto; }
+          .nav-item.active { color: #3054EB; }
+          .nav-icon { width: 24px; height: 24px; margin-bottom: 2px; }
+          .empty { text-align: center; padding: 40px; color: #999; font-size: 14px; }
+        </style>
+
+        <div class="community-container">
+          <div class="banner-swiper" id="bannerSwiper">
+            ${banners.length > 0 ? banners.map(b => `
+              <div class="banner-slide"><img class="banner-image" src="${b.image}" alt="banner"></div>
+            `).join('') : '<div class="banner-slide"><img class="banner-image" src="https://fp1.mingdaoyun.cn/customIcon/0_lego.svg" alt="banner"></div>'}
+          </div>
+
+          <div class="category-scroll">
+            <div class="category-list" id="categoryList">
+              <div class="category-item active" onclick="switchCategory('')">全部</div>
+              <div class="category-item" onclick="switchCategory('赏金任务')">赏金任务</div>
+              <div class="category-item" onclick="switchCategory('问答')">问答</div>
+              <div class="category-item" onclick="switchCategory('吐槽')">吐槽</div>
+            </div>
+          </div>
+
+          <div class="posts-list" id="postsList">
+            ${posts.length > 0 ? posts.map(post => `
+              <div class="post-card" onclick="goToDetail('${post.id}')">
+                ${post.cover ? `<div class="post-cover"><img src="${post.cover}" alt="cover"></div>` : ''}
+                <div class="post-main">
+                  <div class="post-title-row">
+                    <div class="post-title">${post.title}</div>
+                    ${post.category === '赏金任务' ? `<div class="bounty-info"><span class="bounty-tag">【${post.task_type}】</span><span class="bounty-amount">¥${post.bounty_amount}</span></div>` : ''}
+                  </div>
+                  <div class="post-desc">${post.content}</div>
+                  <div class="post-header">
+                    <img class="author-avatar" src="${post.author.avatar}" alt="avatar">
+                    <span class="author-name">${post.author.nickname}</span>
+                    <span class="post-time">${post.created_at}</span>
+                    <span class="post-category ${post.category === '赏金任务' ? 'bounty' : post.category === '问答' ? 'qa' : 'rant'}">${post.category}</span>
+                  </div>
+                  <div class="post-footer">
+                    <div class="footer-item">👍 ${post.likes_count}</div>
+                    <div class="footer-item">💬 ${post.comments_count}</div>
+                    <div class="footer-item">👁️ ${post.views_count || 0}</div>
+                  </div>
+                </div>
+              </div>
+            `).join('') + '<div style="text-align:center;padding:15px;color:#999;font-size:13px;">没有更多了</div>' : '<div class="empty">暂无内容</div>'}
+          </div>
+        </div>
+
+        <div class="float-publish-btn" onclick="goToPublish()">
+          <div class="publish-icon">+</div>
+        </div>
+
+        <div class="bottom-nav">
+          <div class="nav-item active">
+            <img class="nav-icon" src="images/home_fill.png" alt="首页">
+            <span>首页</span>
+          </div>
+          <div class="nav-item" onclick="goToMessages()">
+            <img class="nav-icon" src="images/mark.png" alt="消息">
+            <span>消息</span>
+          </div>
+          <div class="nav-item" onclick="goToProfile()">
+            <img class="nav-icon" src="images/people.png" alt="我的">
+            <span>我的</span>
+          </div>
+        </div>
+      `;
+
+      debugLog('[Entrance] 社区页渲染完成', 'success');
+    }
+  </script>
+</body>
+
+</html>
