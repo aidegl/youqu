@@ -12,7 +12,7 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f5f5; min-height: 100vh; }
-    .container { min-height: 100vh; background: #f5f5f5; padding-bottom: 50px; }
+    .container { min-height: 100vh; background: #f5f5f5; padding-bottom: 20px; }
 
     /* 头部 */
     .header { padding: 12px 15px; background: #3054EB; color: #fff; }
@@ -71,19 +71,26 @@
     .record-title { font-size: 14px; font-weight: 600; color: #333; }
     .record-time { font-size: 11px; color: #999; }
     .record-list { max-height: 120px; overflow-y: auto; }
-    .record-item { display: flex; align-items: center; padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
+    .record-item { display: flex; align-items: center; padding: 6px 0; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
     .record-icon { font-size: 14px; margin-right: 6px; }
     .record-text { flex: 1; font-size: 12px; color: #666; }
     .record-date { font-size: 11px; color: #999; }
 
-    /* 底部导航 */
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 50px; background: #fff; display: flex; border-top: 1px solid #eee; z-index: 99; }
-    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #999; font-size: 12px; cursor: pointer; }
-    .nav-item.active { color: #3054EB; }
-    .nav-icon { width: 20px; height: 20px; margin-bottom: 2px; }
-
     /* 底部版权 */
     .footer { text-align: center; padding: 20px; color: #999; font-size: 11px; }
+
+    /* 登录弹窗 */
+    .login-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+    .login-modal.show { display: flex; }
+    .login-box { background: #fff; border-radius: 12px; padding: 24px; width: 280px; text-align: center; }
+    .login-box-title { font-size: 18px; font-weight: 600; color: #333; margin-bottom: 20px; }
+    .login-input { width: 100%; height: 44px; border: 1px solid #ddd; border-radius: 8px; padding: 0 12px; font-size: 14px; margin-bottom: 12px; outline: none; }
+    .login-input:focus { border-color: #3054EB; }
+    .login-btn { width: 100%; height: 44px; background: #3054EB; color: #fff; border-radius: 8px; font-size: 16px; border: none; cursor: pointer; margin-top: 8px; }
+    .login-btn:active { background: #2544CB; }
+    .login-close { font-size: 12px; color: #999; margin-top: 16px; cursor: pointer; }
+    .login-error { display: none; color: #E91E63; font-size: 13px; margin-top: 12px; }
+    .login-error.show { display: block; }
   </style>
 </head>
 
@@ -91,7 +98,7 @@
   <div class="container">
     <!-- 头部区域 -->
     <header class="header">
-      <div class="header-title">📚 友趣员工培训</div>
+      <div class="header-title">友趣员工培训</div>
       <div class="stats-card">
         <div class="stat-item"><div class="stat-value">5</div><div class="stat-label">必修课程</div></div>
         <div class="stat-item"><div class="stat-value">1</div><div class="stat-label">已完成</div></div>
@@ -102,14 +109,14 @@
 
     <!-- 快捷入口 -->
     <div class="quick-actions">
-      <div class="action-item"><div class="action-icon blue">📖</div><div class="action-text">课程中心</div></div>
-      <div class="action-item"><div class="action-icon orange">📝</div><div class="action-text">在线考试</div></div>
-      <div class="action-item"><div class="action-icon green">📋</div><div class="action-text">学习记录</div></div>
-      <div class="action-item"><div class="action-icon purple">📁</div><div class="action-text">学习资料</div></div>
+      <div class="action-item" onclick="showLoginModal()"><div class="action-icon blue">📖</div><div class="action-text">课程中心</div></div>
+      <div class="action-item" onclick="showLoginModal()"><div class="action-icon orange">📝</div><div class="action-text">在线考试</div></div>
+      <div class="action-item" onclick="showLoginModal()"><div class="action-icon green">📋</div><div class="action-text">学习记录</div></div>
+      <div class="action-item" onclick="showLoginModal()"><div class="action-icon purple">📁</div><div class="action-text">学习资料</div></div>
     </div>
 
     <!-- 考试入口 -->
-    <div class="exam-card" onclick="startExam()">
+    <div class="exam-card" onclick="showLoginModal()">
       <div class="exam-header">
         <div class="exam-icon">🎯</div>
         <div><div class="exam-title">入职考试</div><div class="exam-desc">完成必修课程后参加考试</div></div>
@@ -121,7 +128,7 @@
     <section class="section">
       <div class="section-header">
         <div class="section-title">必修课程</div>
-        <div class="section-more">查看全部 ›</div>
+        <div class="section-more" onclick="showLoginModal()">查看全部 ›</div>
       </div>
       <div id="courseList"></div>
     </section>
@@ -136,17 +143,17 @@
     <div class="footer">
       <div>友趣科技有限公司 © 2024</div>
     </div>
+  </div>
 
-    <!-- 底部导航 -->
-    <div class="bottom-nav">
-      <div class="nav-item active">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-        <span>首页</span>
-      </div>
-      <div class="nav-item" onclick="goToProfile()">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-        <span>我的</span>
-      </div>
+  <!-- 登录弹窗 -->
+  <div class="login-modal" id="loginModal">
+    <div class="login-box">
+      <div class="login-box-title">员工登录</div>
+      <input type="text" class="login-input" id="empId" placeholder="请输入员工号" maxlength="20">
+      <input type="password" class="login-input" id="empPwd" placeholder="请输入密码" maxlength="20">
+      <button class="login-btn" onclick="doFakeLogin()">登录</button>
+      <div class="login-error" id="loginError">员工号或密码错误</div>
+      <div class="login-close" onclick="hideLoginModal()">取消</div>
     </div>
   </div>
 
@@ -154,12 +161,6 @@
     // 小程序环境检测
     function isInMiniProgram() {
       return window.__wxjs_environment === 'miniprogram' || (window.wx && window.wx.miniProgram);
-    }
-
-    function navigateTo(url) {
-      if (isInMiniProgram() && window.wx.miniProgram) {
-        window.wx.miniProgram.navigateTo({ url });
-      }
     }
 
     // 课程数据
@@ -183,7 +184,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       // 课程列表
       document.getElementById('courseList').innerHTML = courses.map(c => `
-        <div class="course-card ${c.completed ? 'completed' : ''}" onclick="startCourse(${c.id})">
+        <div class="course-card ${c.completed ? 'completed' : ''}" onclick="showLoginModal()">
           <div class="course-icon">${c.icon}</div>
           <div class="course-info">
             <div class="course-top">
@@ -201,7 +202,7 @@
 
       // 学习记录
       document.getElementById('recordList').innerHTML = records.map(r => `
-        <div class="record-item">
+        <div class="record-item" onclick="showLoginModal()">
           <div class="record-icon">${r.icon}</div>
           <div class="record-text">${r.text}</div>
           <div class="record-date">${r.date}</div>
@@ -209,16 +210,26 @@
       `).join('');
     });
 
-    function startCourse(id) {
-      navigateTo('/pages/course-detail/course-detail?id=' + id);
+    // 显示登录弹窗
+    function showLoginModal() {
+      document.getElementById('loginModal').classList.add('show');
+      document.getElementById('empId').value = '';
+      document.getElementById('empPwd').value = '';
+      document.getElementById('loginError').classList.remove('show');
     }
 
-    function startExam() {
-      alert('完成所有必修课程后可参加考试');
+    // 隐藏登录弹窗
+    function hideLoginModal() {
+      document.getElementById('loginModal').classList.remove('show');
     }
 
-    function goToProfile() {
-      navigateTo('/pages/profile/profile');
+    // 假登录 - 永远失败
+    function doFakeLogin() {
+      const empId = document.getElementById('empId').value.trim();
+      const empPwd = document.getElementById('empPwd').value.trim();
+
+      // 无论输入什么，都显示错误
+      document.getElementById('loginError').classList.add('show');
     }
   </script>
 </body>
