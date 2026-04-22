@@ -22,7 +22,8 @@ const WORKSHEET_ID = {
   task_takers: '69b5dc137e3c8fc03e16dc99',
   chat_messages: '69cb54c92a26454c6e33ecc4',  // 聊天消息表
   banners: '69b5dc147e3c8fc03e16dcab',  // 轮播图
-  albums: '69cf22246e13c0bcab5a3845'  // 相册表
+  albums: '69cf22246e13c0bcab5a3845',  // 相册表
+  global_config: '69e2a118f7066f665c4ec8ef'  // 全局设置表
 };
 
 /**
@@ -1414,6 +1415,21 @@ async function deleteAlbumImage(imageId) {
   return request(`/v3/app/worksheets/${WORKSHEET_ID.albums}/rows/${imageId}`, 'DELETE', { permanent: true });
 }
 
+/**
+ * 获取系统配置
+ */
+async function getSysConfig() {
+  const result = await getRow(WORKSHEET_ID.global_config, '23638c6a-0305-40e8-bbcf-8731439aa6b4');
+  if (result.success && result.data) {
+    const value = result.data.value || result.data['69e2a118f7066f665c4ec8f1'] || '0';
+    return {
+      success: true,
+      isSpecialMode: value === '1'
+    };
+  }
+  return { success: false, isSpecialMode: false };
+}
+
 module.exports = {
   getRows, getRow, createRow, updateRow,
   getPosts, getPostDetail, createPost,
@@ -1424,5 +1440,6 @@ module.exports = {
   followUser, unfollowUser, checkIsFollowing, getFollowingList, getFollowerList, getFollowStats,
   sendChatMessage, getChatMessages, getTaskConversations,
   getUserAlbums, uploadAlbumImage, deleteAlbumImage,
+  getSysConfig,
   WORKSHEET_ID, HAP_CONFIG
 };

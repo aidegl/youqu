@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+  <title>友趣员工培训</title>
+
+  <!-- JSSDK -->
+  <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+
+<body>
+  <div class="container">
+    <!-- 头部区域 -->
+    <header class="header">
+      <div class="header-top">
+        <div class="header-title">📚 友趣员工培训</div>
+        <div class="header-user">
+          <div class="user-avatar">👤</div>
+          <div class="user-name">新员工</div>
+        </div>
+      </div>
+      <!-- 统计卡片 -->
+      <div class="stats-card">
+        <div class="stat-item">
+          <div class="stat-value">12</div>
+          <div class="stat-label">必修课程</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">3</div>
+          <div class="stat-label">已完成</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">8.5h</div>
+          <div class="stat-label">学习时长</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">85%</div>
+          <div class="stat-label">进度</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 快捷入口 -->
+    <div class="quick-actions">
+      <div class="action-item" onclick="goToCourses()">
+        <div class="action-icon blue">📖</div>
+        <div class="action-text">课程中心</div>
+      </div>
+      <div class="action-item" onclick="goToExam()">
+        <div class="action-icon orange">📝</div>
+        <div class="action-text">在线考试</div>
+      </div>
+      <div class="action-item" onclick="goToRecords()">
+        <div class="action-icon green">📋</div>
+        <div class="action-text">学习记录</div>
+      </div>
+      <div class="action-item" onclick="goToMaterials()">
+        <div class="action-icon purple">📁</div>
+        <div class="action-text">学习资料</div>
+      </div>
+    </div>
+
+    <!-- 考试入口 -->
+    <div class="exam-card" onclick="goToExam()">
+      <div class="exam-header">
+        <div class="exam-icon">🎯</div>
+        <div>
+          <div class="exam-title">入职考试</div>
+          <div class="exam-desc">完成必修课程后参加考试，通过后方可正式入职</div>
+        </div>
+      </div>
+      <div class="exam-btn">开始考试 →</div>
+    </div>
+
+    <!-- 必修课程 -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-title">必修课程</div>
+        <div class="section-more" onclick="goToCourses()">查看全部 ›</div>
+      </div>
+      <!-- 课程分类 -->
+      <div class="category-tabs">
+        <div class="category-tab active">全部</div>
+        <div class="category-tab">未完成</div>
+        <div class="category-tab">已完成</div>
+      </div>
+      <!-- 课程列表 -->
+      <div class="course-list" id="courseList">
+        <!-- 课程由 JS 渲染 -->
+      </div>
+    </section>
+
+    <!-- 学习记录 -->
+    <div class="record-card">
+      <div class="record-header">
+        <div class="record-title">近期学习记录</div>
+        <div class="record-time">今日学习 2.5h</div>
+      </div>
+      <div class="record-list" id="recordList">
+        <!-- 记录由 JS 渲染 -->
+      </div>
+    </div>
+
+    <!-- 学习排行榜 -->
+    <div class="rank-card">
+      <div class="rank-header">
+        <div class="rank-title">学习排行榜</div>
+        <div class="rank-more" onclick="goToRank()">更多 ›</div>
+      </div>
+      <div class="rank-list" id="rankList">
+        <!-- 排行榜由 JS 渲染 -->
+      </div>
+    </div>
+
+    <!-- 常见问题 -->
+    <div class="faq-card">
+      <div class="faq-item" onclick="showFaq(1)">
+        <div class="faq-question">
+          <div class="faq-icon">❓</div>
+          <div class="faq-text">如何获取培训证书？</div>
+          <div class="faq-arrow">›</div>
+        </div>
+      </div>
+      <div class="faq-item" onclick="showFaq(2)">
+        <div class="faq-question">
+          <div class="faq-icon">❓</div>
+          <div class="faq-text">考试未通过怎么办？</div>
+          <div class="faq-arrow">›</div>
+        </div>
+      </div>
+      <div class="faq-item" onclick="showFaq(3)">
+        <div class="faq-question">
+          <div class="faq-icon">❓</div>
+          <div class="faq-text">必修课程有哪些？</div>
+          <div class="faq-arrow">›</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部版权 -->
+    <div class="footer">
+      <div>友趣科技有限公司 © 2024</div>
+      <div>如有问题请联系 <span class="footer-link">培训管理员</span></div>
+    </div>
+  </div>
+
+  <script src="./js/app.js"></script>
+  <script>
+    // 课程数据
+    const courses = [
+      { id: 1, title: '公司规章制度', icon: '📋', duration: '45分钟', progress: 100, completed: true, required: true },
+      { id: 2, title: '安全培训', icon: '🛡️', duration: '60分钟', progress: 80, completed: false, required: true },
+      { id: 3, title: '业务流程培训', icon: '📊', duration: '90分钟', progress: 50, completed: false, required: true },
+      { id: 4, title: '团队协作', icon: '👥', duration: '50分钟', progress: 30, completed: false, required: true },
+      { id: 5, title: '产品知识', icon: '📦', duration: '70分钟', progress: 0, completed: false, required: true }
+    ];
+
+    // 学习记录数据
+    const records = [
+      { icon: '✅', text: '完成《公司规章制度》', date: '今天 14:30' },
+      { icon: '📖', text: '学习《安全培训》第三章', date: '今天 11:20' },
+      { icon: '📝', text: '通过章节测验', date: '昨天 16:45' },
+      { icon: '📖', text: '学习《业务流程培训》第一章', date: '昨天 10:00' }
+    ];
+
+    // 排行榜数据
+    const ranks = [
+      { name: '张明', score: '98分' },
+      { name: '李华', score: '95分' },
+      { name: '王芳', score: '92分' },
+      { name: '刘强', score: '88分' },
+      { name: '陈静', score: '85分' }
+    ];
+
+    // 页面初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      renderCourses();
+      renderRecords();
+      renderRanks();
+    });
+
+    // 渲染课程列表
+    function renderCourses() {
+      const list = document.getElementById('courseList');
+      list.innerHTML = courses.map(course => `
+        <div class="course-card ${course.completed ? 'completed' : ''}" onclick="startCourse(${course.id})">
+          <div class="course-icon">${course.icon}</div>
+          <div class="course-info">
+            <div class="course-top">
+              <div class="course-title">${course.title}</div>
+              ${course.required ? '<span class="course-status required">必修</span>' : ''}
+            </div>
+            <div class="course-meta">
+              <div class="course-duration">⏱ ${course.duration}</div>
+              <div class="course-progress">
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: ${course.progress}%"></div>
+                </div>
+                <div class="progress-text">${course.progress}%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 渲染学习记录
+    function renderRecords() {
+      const list = document.getElementById('recordList');
+      list.innerHTML = records.map(record => `
+        <div class="record-item">
+          <div class="record-icon">${record.icon}</div>
+          <div class="record-text">${record.text}</div>
+          <div class="record-date">${record.date}</div>
+        </div>
+      `).join('');
+    }
+
+    // 渲染排行榜
+    function renderRanks() {
+      const list = document.getElementById('rankList');
+      list.innerHTML = ranks.map((rank, index) => `
+        <div class="rank-item">
+          <div class="rank-num ${index === 0 ? 'top1' : index === 1 ? 'top2' : index === 2 ? 'top3' : 'normal'}">${index + 1}</div>
+          <div class="rank-avatar">👤</div>
+          <div class="rank-name">${rank.name}</div>
+          <div class="rank-score">${rank.score}</div>
+        </div>
+      `).join('');
+    }
+
+    // 课程分类切换
+    function switchCategory(type) {
+      document.querySelectorAll('.category-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      event.target.classList.add('active');
+
+      let filteredCourses = courses;
+      if (type === '未完成') {
+        filteredCourses = courses.filter(c => !c.completed);
+      } else if (type === '已完成') {
+        filteredCourses = courses.filter(c => c.completed);
+      }
+      renderCoursesFiltered(filteredCourses);
+    }
+
+    function renderCoursesFiltered(filteredCourses) {
+      const list = document.getElementById('courseList');
+      if (filteredCourses.length === 0) {
+        list.innerHTML = '<div class="empty">暂无课程</div>';
+        return;
+      }
+      list.innerHTML = filteredCourses.map(course => `
+        <div class="course-card ${course.completed ? 'completed' : ''}" onclick="startCourse(${course.id})">
+          <div class="course-icon">${course.icon}</div>
+          <div class="course-info">
+            <div class="course-top">
+              <div class="course-title">${course.title}</div>
+              ${course.required ? '<span class="course-status required">必修</span>' : ''}
+            </div>
+            <div class="course-meta">
+              <div class="course-duration">⏱ ${course.duration}</div>
+              <div class="course-progress">
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: ${course.progress}%"></div>
+                </div>
+                <div class="progress-text">${course.progress}%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 功能跳转
+    function startCourse(id) {
+      console.log('开始课程:', id);
+      if (window.webview && window.webview.isInMiniProgram()) {
+        window.webview.navigateTo('/pages/course-detail/course-detail?id=' + id);
+      } else {
+        alert('开始学习课程 #' + id);
+      }
+    }
+
+    function goToCourses() {
+      alert('查看全部课程');
+    }
+
+    function goToExam() {
+      alert('开始在线考试');
+    }
+
+    function goToRecords() {
+      alert('查看学习记录');
+    }
+
+    function goToMaterials() {
+      alert('下载学习资料');
+    }
+
+    function goToRank() {
+      alert('查看完整排行榜');
+    }
+
+    function showFaq(id) {
+      const answers = {
+        1: '完成全部必修课程并通过考试后，系统会自动生成培训证书，可在"学习记录"中查看和下载。',
+        2: '考试未通过可重新学习相关课程，7天后可再次参加考试。每人最多有3次考试机会。',
+        3: '必修课程包括：公司规章制度、安全培训、业务流程培训、团队协作、产品知识等5门课程。'
+      };
+      alert(answers[id]);
+    }
+  </script>
+</body>
+
+</html>

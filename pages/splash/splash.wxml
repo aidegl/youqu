@@ -1,0 +1,12 @@
+<!--pages/splash/splash.wxml-->
+<view class="splash-container">
+  <!-- 自定义导航栏占位 -->
+  <view class="nav-placeholder" style="height: {{navHeight}}px;"></view>
+
+  <!-- Logo 和加载 -->
+  <view class="splash-content">
+    <view class="logo">友趣</view>
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+</view>

@@ -1,7 +1,9 @@
 {
-  "description": "友趣校园社区小程序",
+  "description": "友趣员工培训小程序",
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      { "type": "folder", "value": ".git" }
+    ],
     "include": []
   },
   "setting": {

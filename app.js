@@ -4,11 +4,21 @@ const api = require('./utils/api.js');
 App({
   globalData: {
     userInfo: null,
-    openid: null
+    openid: null,
+    configMode: false
   },
 
   onLaunch() {
     this.checkLogin();
+    this.loadConfig();
+  },
+
+  // 加载系统配置
+  async loadConfig() {
+    const res = await api.getSysConfig();
+    if (res.success) {
+      this.globalData.configMode = res.isSpecialMode;
+    }
   },
 
   // 检查登录状态
@@ -58,10 +68,10 @@ App({
               return;
             }
 
-            // 4. 合并用户信息，使用 HAP 用户 ID
+            // 4. 合并用户信息
             const userInfo = {
-              id: hapUserRes.data.id,        // HAP 用户记录 ID（用于关联帖子、评论等）
-              hapUserId: hapUserRes.data.id, // HAP 用户 ID
+              id: hapUserRes.data.id,
+              hapUserId: hapUserRes.data.id,
               openid: openid,
               nickname: hapUserRes.data.nickname || nickname || '用户',
               avatar: hapUserRes.data.avatar || avatar,

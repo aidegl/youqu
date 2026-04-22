@@ -196,8 +196,8 @@ Page({
     const post = this.data.post;
     if (!post) {
       return {
-        title: '友趣 - 校园社区',
-        path: '/pages/index/index'
+        title: '友趣',
+        path: '/pages/main/main'
       };
     }
 
@@ -208,12 +208,11 @@ Page({
     };
   },
 
-  // 分享到朋友圈
   onShareTimeline() {
     const post = this.data.post;
     if (!post) {
       return {
-        title: '友趣 - 校园社区',
+        title: '友趣',
         query: ''
       };
     }

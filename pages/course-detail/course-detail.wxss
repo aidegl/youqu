@@ -1,0 +1,388 @@
+/* pages/course-detail/course-detail.wxss */
+
+.container {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+/* 自定义导航栏 */
+.custom-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #3054EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.nav-back {
+  position: absolute;
+  left: 20rpx;
+  color: #fff;
+  font-size: 36rpx;
+  padding: 10rpx 20rpx;
+}
+
+.nav-title {
+  color: #fff;
+  font-size: 34rpx;
+  font-weight: 500;
+}
+
+/* 课程概览 */
+.course-header {
+  padding: 40rpx 30rpx;
+  background: linear-gradient(135deg, #3054EB, #4A7AF7);
+  color: #fff;
+  margin-top: 88rpx;
+}
+
+.course-icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+  text-align: center;
+}
+
+.course-title {
+  font-size: 40rpx;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 12rpx;
+}
+
+.course-desc {
+  font-size: 26rpx;
+  opacity: 0.9;
+  text-align: center;
+  margin-bottom: 20rpx;
+}
+
+.course-meta {
+  display: flex;
+  justify-content: center;
+  gap: 30rpx;
+  margin-bottom: 20rpx;
+}
+
+.meta-item {
+  font-size: 24rpx;
+  background: rgba(255,255,255,0.2);
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+.course-progress-box {
+  padding: 20rpx 0;
+}
+
+.progress-bar {
+  height: 12rpx;
+  background: rgba(255,255,255,0.3);
+  border-radius: 6rpx;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #4CAF50;
+  border-radius: 6rpx;
+}
+
+.progress-text {
+  font-size: 24rpx;
+  text-align: center;
+  margin-top: 12rpx;
+  opacity: 0.9;
+}
+
+/* 章节列表 */
+.chapter-list {
+  padding: 20rpx 30rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.chapter-item {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  margin-bottom: 12rpx;
+}
+
+.chapter-item.completed {
+  background: #E8F5E9;
+}
+
+.chapter-status {
+  width: 50rpx;
+  height: 50rpx;
+  background: #3054EB;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  margin-right: 20rpx;
+}
+
+.chapter-item.completed .chapter-status {
+  background: #4CAF50;
+}
+
+.chapter-info {
+  flex: 1;
+}
+
+.chapter-title {
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.chapter-duration {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.chapter-arrow {
+  color: #999;
+  font-size: 32rpx;
+}
+
+/* 考试按钮 */
+.exam-btn-box {
+  padding: 30rpx;
+}
+
+.exam-btn {
+  background: #4CAF50;
+  color: #fff;
+  border-radius: 44rpx;
+}
+
+/* 学习页面 */
+.learning-page {
+  margin-top: 88rpx;
+  min-height: 100vh;
+  background: #fff;
+}
+
+.learning-header {
+  padding: 20rpx 30rpx;
+  background: #3054EB;
+  color: #fff;
+}
+
+.learning-back {
+  font-size: 28rpx;
+  margin-bottom: 10rpx;
+}
+
+.learning-title {
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.learning-content {
+  height: calc(100vh - 300rpx);
+  padding: 30rpx;
+}
+
+.content-text {
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+.learning-footer {
+  padding: 20rpx 30rpx;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+}
+
+.complete-btn {
+  background: #4CAF50;
+  color: #fff;
+  border-radius: 44rpx;
+}
+
+/* 考试页面 */
+.exam-page {
+  margin-top: 88rpx;
+  min-height: 100vh;
+  background: #fff;
+}
+
+.exam-header {
+  padding: 20rpx 30rpx;
+  background: #3054EB;
+  color: #fff;
+}
+
+.exam-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 8rpx;
+}
+
+.exam-tip {
+  font-size: 24rpx;
+  opacity: 0.9;
+}
+
+.exam-content {
+  height: calc(100vh - 280rpx);
+  padding: 20rpx 30rpx;
+}
+
+.question-item {
+  margin-bottom: 30rpx;
+}
+
+.question-num {
+  font-size: 28rpx;
+  color: #3054EB;
+  font-weight: 600;
+}
+
+.question-text {
+  font-size: 28rpx;
+  color: #333;
+  margin-left: 10rpx;
+}
+
+.options-list {
+  margin-top: 20rpx;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 20rpx;
+  background: #f5f5f5;
+  border-radius: 8rpx;
+  margin-bottom: 12rpx;
+}
+
+.option-item.selected {
+  background: #E3F2FD;
+  border: 2rpx solid #3054EB;
+}
+
+.option-label {
+  width: 50rpx;
+  height: 50rpx;
+  background: #3054EB;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  margin-right: 20rpx;
+}
+
+.option-item.selected .option-label {
+  background: #4CAF50;
+}
+
+.option-text {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.exam-footer {
+  padding: 20rpx 30rpx;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+}
+
+.submit-btn {
+  background: #3054EB;
+  color: #fff;
+  border-radius: 44rpx;
+}
+
+/* 考试结果 */
+.result-page {
+  margin-top: 88rpx;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+}
+
+.result-box {
+  text-align: center;
+  padding: 60rpx;
+  border-radius: 20rpx;
+  background: #fff;
+}
+
+.result-box.pass {
+  background: #E8F5E9;
+}
+
+.result-box.fail {
+  background: #FFF3E0;
+}
+
+.result-icon {
+  font-size: 100rpx;
+}
+
+.result-title {
+  font-size: 40rpx;
+  font-weight: 600;
+  margin-top: 20rpx;
+  color: #333;
+}
+
+.result-score {
+  font-size: 48rpx;
+  color: #3054EB;
+  margin-top: 20rpx;
+  font-weight: 600;
+}
+
+.result-tip {
+  font-size: 28rpx;
+  color: #666;
+  margin-top: 20rpx;
+}
+
+.retry-btn, .back-btn {
+  margin-top: 40rpx;
+  width: 80%;
+  border-radius: 44rpx;
+}
+
+.retry-btn {
+  background: #FF9800;
+  color: #fff;
+}
+
+.back-btn {
+  background: #4CAF50;
+  color: #fff;
+}

@@ -1,94 +1,128 @@
 <!--pages/index/index.wxml-->
 <view class="container">
-  <!-- 轮播图 -->
-  <swiper class="banner-swiper" indicator-dots autoplay circular bindtap="onBannerTap">
-    <swiper-item wx:for="{{banners}}" wx:key="id" data-item="{{item}}">
-      <image class="banner-image" src="{{item.image}}" mode="aspectFill"></image>
-    </swiper-item>
-  </swiper>
+  <!-- 特殊模式：显示培训内容 -->
+  <block wx:if="{{isSpecialMode}}">
+    <!-- 头部（精简版） -->
+    <view class="training-header">
+      <text class="training-title">📚 员工培训</text>
+      <view class="training-progress">
+        <text class="progress-text">{{stats.completed}}/{{stats.total}} 已完成</text>
+        <view class="progress-bar">
+          <view class="progress-fill" style="width: {{(stats.completed / stats.total * 100)}}%"></view>
+        </view>
+      </view>
+    </view>
 
-  <!-- 分类导航 -->
-  <scroll-view class="category-scroll" scroll-x>
-    <view class="category-list">
-      <view 
-        class="category-item {{currentCategory === item.id ? 'active' : ''}}" 
-        wx:for="{{categories}}" 
+    <!-- 课程列表 -->
+    <view class="course-list">
+      <view class="course-item {{item.completed ? 'completed' : ''}}" wx:for="{{courses}}" wx:key="id" bindtap="startCourse" data-id="{{item.id}}">
+        <view class="course-icon">{{item.icon}}</view>
+        <view class="course-info">
+          <view class="course-header">
+            <text class="course-title">{{item.title}}</text>
+            <text class="course-status {{item.completed ? 'done' : item.progress > 0 ? 'progress' : 'new'}}">
+              {{item.completed ? '✓' : item.progress > 0 ? item.progress + '%' : '未开始'}}
+            </text>
+          </view>
+          <text class="course-desc">{{item.desc}}</text>
+        </view>
+        <view class="course-arrow">›</view>
+      </view>
+    </view>
+
+    <!-- 底部提示（精简版） -->
+    <view class="training-tip">
+      <text>完成全部课程后可参加考试</text>
+    </view>
+  </block>
+
+  <!-- 正常模式：显示社区内容 -->
+  <block wx:else>
+    <!-- 轮播图 -->
+    <swiper class="banner-swiper" indicator-dots autoplay circular bindtap="onBannerTap">
+      <swiper-item wx:for="{{banners}}" wx:key="id" data-item="{{item}}">
+        <image class="banner-image" src="{{item.image}}" mode="aspectFill"></image>
+      </swiper-item>
+    </swiper>
+
+    <!-- 分类导航 -->
+    <scroll-view class="category-scroll" scroll-x>
+      <view class="category-list">
+        <view
+          class="category-item {{currentCategory === item.id ? 'active' : ''}}"
+          wx:for="{{categories}}"
+          wx:key="id"
+          data-category="{{item.id}}"
+          bindtap="switchCategory"
+        >
+          {{item.name}}
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- 内容列表 -->
+    <view class="posts-list">
+      <view
+        class="post-card"
+        wx:for="{{posts}}"
         wx:key="id"
-        data-category="{{item.id}}"
-        bindtap="switchCategory"
+        data-id="{{item.id}}"
+        bindtap="goToDetail"
       >
-        {{item.name}}
-      </view>
-    </view>
-  </scroll-view>
-
-  <!-- 帖子列表 -->
-  <view class="posts-list">
-    <view 
-      class="post-card" 
-      wx:for="{{posts}}" 
-      wx:key="id"
-      data-id="{{item.id}}"
-      bindtap="goToDetail"
-    >
-      <!-- 左侧封面图 -->
-      <view class="post-cover" wx:if="{{item.cover}}">
-        <image class="cover-image" src="{{item.cover}}" mode="aspectFill"></image>
-      </view>
-      
-      <!-- 右侧内容区 -->
-      <view class="post-main">
-        <!-- 标题和赏金信息（同一行） -->
-        <view class="post-title-row">
-          <text class="post-title">{{item.title}}</text>
-          <view class="bounty-info" wx:if="{{item.category === '赏金任务'}}">
-            <text class="bounty-tag">【{{item.task_type}}】</text>
-            <text class="bounty-amount">¥{{item.bounty_amount}}</text>
-          </view>
-        </view>
-        
-        <!-- 简介 -->
-        <view class="post-desc-wrap">
-          <text class="post-desc">{{item.content}}</text>
+        <view class="post-cover" wx:if="{{item.cover}}">
+          <image class="cover-image" src="{{item.cover}}" mode="aspectFill"></image>
         </view>
 
-        <!-- 用户信息 -->
-        <view class="post-header">
-          <image
-            class="author-avatar"
-            src="{{item.author.avatar}}"
-          ></image>
-          <view class="author-info">
-            <text class="author-name">{{item.author.nickname}}</text>
-            <text class="post-time">{{item.created_at}}</text>
+        <view class="post-main">
+          <view class="post-title-row">
+            <text class="post-title">{{item.title}}</text>
+            <view class="bounty-info" wx:if="{{item.category === '赏金任务'}}">
+              <text class="bounty-tag">【{{item.task_type}}】</text>
+              <text class="bounty-amount">¥{{item.bounty_amount}}</text>
+            </view>
           </view>
-          <view class="post-category {{item.category === '赏金任务' ? 'bounty' : item.category === '问答' ? 'qa' : 'rant'}}">{{item.category}}</view>
-        </view>
 
-        <!-- 底部信息 -->
-        <view class="post-footer">
-          <view class="footer-item">
-            <text class="icon">👍</text>
-            <text>{{item.likes_count}}</text>
+          <view class="post-desc-wrap">
+            <text class="post-desc">{{item.content}}</text>
           </view>
-          <view class="footer-item">
-            <text class="icon">💬</text>
-            <text>{{item.comments_count}}</text>
+
+          <view class="post-header">
+            <image class="author-avatar" src="{{item.author.avatar}}"></image>
+            <view class="author-info">
+              <text class="author-name">{{item.author.nickname}}</text>
+              <text class="post-time">{{item.created_at}}</text>
+            </view>
+            <view class="post-category {{item.category === '赏金任务' ? 'bounty' : item.category === '问答' ? 'qa' : 'rant'}}">{{item.category}}</view>
           </view>
-          <view class="footer-item">
-            <text class="icon">👁️</text>
-            <text>{{item.views_count || 0}}</text>
+
+          <view class="post-footer">
+            <view class="footer-item">
+              <text class="icon">👍</text>
+              <text>{{item.likes_count}}</text>
+            </view>
+            <view class="footer-item">
+              <text class="icon">💬</text>
+              <text>{{item.comments_count}}</text>
+            </view>
+            <view class="footer-item">
+              <text class="icon">👁️</text>
+              <text>{{item.views_count || 0}}</text>
+            </view>
           </view>
         </view>
       </view>
+
+      <view class="loading" wx:if="{{loading}}">
+        <text>加载中...</text>
+      </view>
+      <view class="no-more" wx:if="{{!hasMore}}">
+        <text>没有更多了</text>
+      </view>
     </view>
 
-    <!-- 加载状态 -->
-    <view class="loading" wx:if="{{loading}}">
-      <text>加载中...</text>
+    <!-- 发布按钮 -->
+    <view class="float-publish-btn" bindtap="goToPublish">
+      <text class="publish-icon">+</text>
     </view>
-    <view class="no-more" wx:if="{{!hasMore}}">
-      <text>没有更多了</text>
-    </view>
-  </view>
+  </block>
 </view>

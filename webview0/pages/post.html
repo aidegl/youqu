@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+  <title>帖子详情</title>
+
+  <!-- JSSDK -->
+  <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/post.css">
+</head>
+
+<body>
+  <div class="container" id="postContainer">
+    <!-- 帖子内容由 JS 渲染 -->
+    <view class="loading" id="loadingEl">
+      <text>加载中...</text>
+    </view>
+  </div>
+
+  <!-- 底部评论输入 -->
+  <view class="comment-input-box" id="commentInputBox" style="display: none;">
+    <input class="comment-input" placeholder="说点什么..." id="commentInput" />
+    <button class="send-btn" onclick="submitComment()">发送</button>
+  </view>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    let postId = '';
+    let post = null;
+    let comments = [];
+    let userInfo = null;
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      // 获取帖子 ID
+      const params = window.webview.getQueryParams();
+      postId = params.id;
+
+      if (!postId) {
+        document.getElementById('loadingEl').innerHTML = '<text>帖子不存在</text>';
+        return;
+      }
+
+      // 获取用户信息
+      userInfo = window.webview.getUserInfo();
+
+      // 加载帖子详情
+      await loadPostDetail();
+    });
+
+    async function loadPostDetail() {
+      const res = await window.API.getPostDetail(postId);
+
+      if (res.success) {
+        post = res.data;
+        renderPost();
+        await loadComments();
+      } else {
+        document.getElementById('loadingEl').innerHTML = '<text>加载失败</text>';
+      }
+    }
+
+    function renderPost() {
+      const container = document.getElementById('postContainer');
+      const isOwner = userInfo && userInfo.id === post.author.id;
+
+      container.innerHTML = `
+        <!-- 帖子内容 -->
+        <view class="post-detail">
+          <!-- 图片轮播 -->
+          ${post.images && post.images.length > 0 ? `
+            <swiper class="post-images">
+              ${post.images.map(img => `
+                <swiper-item onclick="previewImage('${img}')">
+                  <image class="post-image-item" src="${img}" mode="aspectFill"></image>
+                </swiper-item>
+              `).join('')}
+            </swiper>
+          ` : ''}
+
+          <!-- 标题和内容 -->
+          <view class="post-body">
+            <text class="post-title">${post.title}</text>
+            <text class="post-content">${post.content}</text>
+          </view>
+
+          <!-- 用户信息 -->
+          <view class="post-header">
+            <image class="author-avatar" src="${post.author.avatar}" onclick="goToUserSpace('${post.author.id}')"></image>
+            <view class="author-info" onclick="goToUserSpace('${post.author.id}')">
+              <text class="author-name">${post.author.nickname}</text>
+              <text class="post-time">${post.created_at}</text>
+            </view>
+            ${!isOwner ? `
+              <view class="follow-btn" onclick="toggleFollow()">
+                关注
+              </view>
+            ` : ''}
+          </view>
+
+          <!-- 悬赏信息 -->
+          ${post.category === '赏金任务' ? `
+            <view class="bounty-box">
+              <text class="bounty-tag">【${post.task_type}】</text>
+              <view class="bounty-amount">悬赏 ¥${post.bounty_amount}</view>
+              ${!isOwner ? `
+                <button class="take-btn" onclick="takeTask()">接取任务</button>
+              ` : ''}
+            </view>
+          ` : ''}
+
+          <!-- 互动按钮 -->
+          <view class="action-bar">
+            <view class="action-item" onclick="toggleLike()">
+              <text class="icon">🤍</text>
+              <text>${post.likes_count}</text>
+            </view>
+            <view class="action-item">
+              <text class="icon">💬</text>
+              <text>${post.comments_count}</text>
+            </view>
+            <view class="action-item" onclick="sharePost()">
+              <text class="icon">📤</text>
+              <text>分享</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 评论区域 -->
+        <view class="comments-section">
+          <view class="section-title">评论 ${post.comments_count}</view>
+          <view class="comments-list" id="commentsList">
+            <!-- 评论由 loadComments 渲染 -->
+          </view>
+        </view>
+      `;
+
+      // 显示评论输入框
+      document.getElementById('commentInputBox').style.display = 'flex';
+    }
+
+    async function loadComments() {
+      const res = await window.API.getComments ? await window.API.getComments(postId) : { success: false, data: [] };
+      comments = res.success ? res.data : [];
+
+      const commentsList = document.getElementById('commentsList');
+      if (comments.length === 0) {
+        commentsList.innerHTML = '<view class="no-comment"><text>暂无评论，快来抢沙发吧~</text></view>';
+      } else {
+        commentsList.innerHTML = comments.map(comment => `
+          <view class="comment-item">
+            <image class="comment-avatar" src="${comment.author.avatar}"></image>
+            <view class="comment-body">
+              <view class="comment-header">
+                <text class="comment-author">${comment.author.nickname}</text>
+                <text class="comment-time">${comment.created_at}</text>
+              </view>
+              <text class="comment-content">${comment.content}</text>
+              <view class="comment-actions">
+                <text class="action" onclick="replyComment('${comment.author.nickname}')">回复</text>
+              </view>
+            </view>
+          </view>
+        `).join('');
+      }
+    }
+
+    function previewImage(src) {
+      if (window.webview.isInMiniProgram()) {
+        // 在小程序中预览图片需要原生支持
+        window.webview.postMessage({ type: 'previewImage', current: src, urls: post.images });
+      } else {
+        window.open(src, '_blank');
+      }
+    }
+
+    async function toggleLike() {
+      if (!userInfo) {
+        alert('请先登录');
+        return;
+      }
+      // 调用点赞 API
+      alert('点赞功能需要登录');
+    }
+
+    async function takeTask() {
+      if (!userInfo) {
+        alert('请先登录');
+        return;
+      }
+      alert('接取任务功能需要登录');
+    }
+
+    async function submitComment() {
+      const input = document.getElementById('commentInput');
+      const text = input.value.trim();
+
+      if (!text) {
+        alert('请输入内容');
+        return;
+      }
+
+      if (!userInfo) {
+        alert('请先登录');
+        return;
+      }
+
+      // 调用评论 API
+      alert('评论功能需要登录');
+    }
+
+    function replyComment(nickname) {
+      const input = document.getElementById('commentInput');
+      input.value = '@' + nickname + ' ';
+      input.focus();
+    }
+
+    function goToUserSpace(userId) {
+      if (userId) {
+        if (window.webview.isInMiniProgram()) {
+          window.webview.navigateTo('/pages/profile-space/profile-space?id=' + userId);
+        } else {
+          window.location.href = './profile.html?id=' + userId;
+        }
+      }
+    }
+
+    async function toggleFollow() {
+      if (!userInfo) {
+        alert('请先登录');
+        return;
+      }
+      alert('关注功能需要登录');
+    }
+
+    function sharePost() {
+      if (window.webview.isInMiniProgram()) {
+        // 小程序分享需要原生支持
+      } else {
+        // 浏览器环境复制链接
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+          alert('链接已复制');
+        });
+      }
+    }
+  </script>
+</body>
+
+</html>

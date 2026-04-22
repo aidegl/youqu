@@ -1,6 +1,9 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/splash/splash",
+    "pages/course-detail/course-detail",
+    "pages/main/main",
     "pages/post/post",
     "pages/publish/publish",
     "pages/profile/profile",
@@ -28,12 +31,6 @@
         "text": "首页",
         "iconPath": "images/home.png",
         "selectedIconPath": "images/home_fill.png"
-      },
-      {
-        "pagePath": "pages/publish/publish",
-        "text": "发布",
-        "iconPath": "images/news_hot.png",
-        "selectedIconPath": "images/news_hot_fill.png"
       },
       {
         "pagePath": "pages/messages/messages",

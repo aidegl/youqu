@@ -105,7 +105,7 @@ Page({
     if (res.success) {
       wx.showToast({ title: '发布成功' });
       setTimeout(() => {
-        wx.switchTab({ url: '/pages/index/index' });
+        wx.switchTab({ url: '/pages/main/main' });
       }, 1500);
     } else {
       wx.showToast({ title: res.error_msg || '发布失败', icon: 'none' });

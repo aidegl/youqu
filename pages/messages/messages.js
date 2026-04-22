@@ -1,4 +1,4 @@
-// pages/messages/messages.js - 消息列表
+// pages/messages/messages.js
 const api = require('../../utils/api.js');
 const app = getApp();
 
@@ -8,6 +8,11 @@ Page({
     messages: [],
     taskConversations: [],
     loading: false
+  },
+
+  onLoad() {
+    this.loadMessages();
+    this.loadTaskConversations();
   },
 
   onShow() {
@@ -55,13 +60,9 @@ Page({
 
   async goToDetail(e) {
     const item = e.currentTarget.dataset.item;
-
-    // 标记已读
     if (!item.is_read) {
       await api.markMessageRead(item.id);
     }
-
-    // 根据消息类型跳转
     if (item.related_post_id) {
       wx.navigateTo({ url: `/pages/post/post?id=${item.related_post_id}` });
     }

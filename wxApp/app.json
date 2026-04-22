@@ -1,0 +1,12 @@
+{
+  "pages": [
+    "pages/webview/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "友趣培训",
+    "navigationBarBackgroundColor": "#3054EB",
+    "navigationBarTextStyle": "white"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

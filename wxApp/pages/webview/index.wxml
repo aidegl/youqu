@@ -1,0 +1,2 @@
+<!-- web-view 组件：使用 key 属性强制刷新 -->
+<web-view id="webview" src="{{url}}" key="{{webviewKey}}" bindmessage="onMessage"></web-view>
