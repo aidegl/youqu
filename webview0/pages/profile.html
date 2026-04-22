@@ -11,6 +11,19 @@
   <script src="../js/api.js"></script>
   <script src="../js/app.js"></script>
 
+  <!-- 全局函数必须在 HTML 渲染前定义 -->
+  <script>
+    window.goToHome = function() {
+      console.log('[Profile] goToHome - jumping to entrance');
+      window.location.href = '../entrance.html';
+    };
+
+    window.goToMessages = function() {
+      console.log('[Profile] goToMessages - jumping to messages');
+      window.location.href = 'messages.html';
+    };
+  </script>
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f5f5; min-height: 100vh; }
@@ -49,7 +62,7 @@
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 50px; background: #fff; display: flex; border-top: 1px solid #eee; z-index: 99; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #999; font-size: 12px; cursor: pointer; }
     .nav-item.active { color: #3054EB; }
-    .nav-icon { width: 20px; height: 20px; margin-bottom: 2px; }
+    .nav-icon { width: 24px; height: 24px; margin-bottom: 2px; }
 
     /* 加载状态 */
     .loading { text-align: center; padding: 20px; color: #999; }
@@ -127,16 +140,16 @@
 
   <!-- 底部导航 -->
   <div class="bottom-nav">
-    <div class="nav-item" onclick="switchNav('home')">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    <div class="nav-item" onclick="goToHome()">
+      <img class="nav-icon" src="../images/home.png" alt="首页">
       <span>首页</span>
     </div>
-    <div class="nav-item" onclick="switchNav('messages')">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+    <div class="nav-item" onclick="goToMessages()">
+      <img class="nav-icon" src="../images/mark.png" alt="消息">
       <span>消息</span>
     </div>
     <div class="nav-item active">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      <img class="nav-icon" src="../images/people_fill.png" alt="我的">
       <span>我的</span>
     </div>
   </div>
@@ -308,14 +321,6 @@
       }
     }
 
-    function goToMessages() {
-      if (isInMiniProgram()) {
-        switchTab('/pages/messages/messages');
-      } else {
-        window.location.href = 'messages.html';
-      }
-    }
-
     function goToFollowers() {
       if (!userInfo) {
         login();
@@ -345,22 +350,6 @@
 
       if (isInMiniProgram()) {
         postMessage({ type: 'logout' });
-      }
-    }
-
-    function switchNav(tab) {
-      if (tab === 'home') {
-        if (isInMiniProgram()) {
-          switchTab('/pages/index/index');
-        } else {
-          window.location.href = '../websh.html';
-        }
-      } else if (tab === 'messages') {
-        if (isInMiniProgram()) {
-          switchTab('/pages/messages/messages');
-        } else {
-          window.location.href = './messages.html';
-        }
       }
     }
   </script>
