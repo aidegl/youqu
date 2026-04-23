@@ -251,13 +251,62 @@
 
     // ========== 小程序通信 ==========
     function isInMiniProgram() {
-      return window.__wxjs_environment === 'miniprogram' || (window.wx && window.wx.miniProgram);
+      return (
+        window.__wxjs_environment === 'miniprogram' ||
+        (window.wx && window.wx.miniProgram) ||
+        /miniProgram/i.test(navigator.userAgent)
+      );
     }
 
     function postMessage(data) {
       if (isInMiniProgram() && window.wx.miniProgram) {
         window.wx.miniProgram.postMessage({ data });
       }
+    }
+
+    // 等待小程序 API 准备好
+    function ensureMiniProgramReady() {
+      return new Promise((resolve) => {
+        if (window.wx && window.wx.miniProgram) {
+          resolve();
+          return;
+        }
+
+        let tries = 0;
+        const timer = setInterval(() => {
+          tries += 1;
+          if (window.wx && window.wx.miniProgram) {
+            clearInterval(timer);
+            resolve();
+            return;
+          }
+          if (tries >= 20) {
+            clearInterval(timer);
+            resolve();
+          }
+        }, 100);
+      });
+    }
+
+    // 跳转小程序页面（实时）
+    function navigateMiniProgram(url) {
+      console.log('[SPA] navigateMiniProgram:', url);
+
+      if (!isInMiniProgram()) {
+        console.log('[SPA] 不在小程序环境');
+        alert('请在微信小程序中打开');
+        return;
+      }
+
+      ensureMiniProgramReady().then(() => {
+        console.log('[SPA] miniProgram ready, wx.miniProgram:', window.wx?.miniProgram);
+        if (window.wx && window.wx.miniProgram && typeof window.wx.miniProgram.navigateTo === 'function') {
+          console.log('[SPA] 调用 wx.miniProgram.navigateTo:', url);
+          window.wx.miniProgram.navigateTo({ url });
+        } else {
+          console.log('[SPA] wx.miniProgram.navigateTo 不可用');
+        }
+      });
     }
 
     // ========== 路由控制 ==========
@@ -461,7 +510,7 @@
 
     function goToPublish() {
       if (!userInfo) {
-        postMessage({ type: 'login' });
+        navigateMiniProgram('/pages/login/index');
         return;
       }
       navigate('publish');
@@ -564,7 +613,7 @@
 
     async function toggleLike() {
       if (!userInfo) {
-        postMessage({ type: 'login' });
+        navigateMiniProgram('/pages/login/index');
         return;
       }
       const res = await window.API.toggleLike(userInfo.id, 'post', detailPost.id);
@@ -577,7 +626,7 @@
 
     async function toggleFollow() {
       if (!userInfo) {
-        postMessage({ type: 'login' });
+        navigateMiniProgram('/pages/login/index');
         return;
       }
       const res = await window.API.followUser(userInfo.id, detailPost.author.id);
@@ -591,7 +640,7 @@
 
     async function takeTask() {
       if (!userInfo) {
-        postMessage({ type: 'login' });
+        navigateMiniProgram('/pages/login/index');
         return;
       }
       const res = await window.API.takeTask(detailPost.id, userInfo.id);
@@ -608,7 +657,7 @@
       if (!text) return;
 
       if (!userInfo) {
-        postMessage({ type: 'login' });
+        navigateMiniProgram('/pages/login/index');
         return;
       }
 
@@ -680,14 +729,14 @@
             <div class="profile-header">
               <img class="profile-avatar" src="https://fp1.mingdaoyun.cn/customIcon/0_lego.svg">
               <div class="profile-nickname">未登录</div>
-              <button class="login-btn" onclick="postMessage({type:'login'})">登录</button>
+              <button class="login-btn" onclick="navigateMiniProgram('/pages/login/index')">登录</button>
             </div>
             <div class="menu-list">
-              <div class="menu-item" onclick="alert('请先登录')">
+              <div class="menu-item" onclick="navigateMiniProgram('/pages/login/index')">
                 <span class="menu-icon">📝</span>
                 <span class="menu-text">我的发布</span>
               </div>
-              <div class="menu-item" onclick="alert('请先登录')">
+              <div class="menu-item" onclick="navigateMiniProgram('/pages/login/index')">
                 <span class="menu-icon">📷</span>
                 <span class="menu-text">我的相册</span>
               </div>
@@ -845,7 +894,7 @@
       }
 
       if (!userInfo) {
-        postMessage({ type: 'login' });
+        navigateMiniProgram('/pages/login/index');
         return;
       }
 
