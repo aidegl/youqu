@@ -284,19 +284,11 @@
     }
 
     function goToDetail(id) {
-      if (isInMiniProgram()) {
-        navigateTo('/pages/post/post?id=' + id);
-      } else {
-        window.location.href = 'post.html?id=' + id;
-      }
+      window.location.href = 'post.html?id=' + id;
     }
 
     function goToAlbum() {
-      if (isInMiniProgram()) {
-        navigateTo('/pages/album/album?userId=' + targetUserId);
-      } else {
-        window.location.href = 'album.html?userId=' + targetUserId;
-      }
+      window.location.href = 'album.html?userId=' + targetUserId;
     }
   </script>
 </body>

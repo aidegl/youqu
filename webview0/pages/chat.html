@@ -244,11 +244,7 @@
 
     function goToPost() {
       if (postId) {
-        if (isInMiniProgram()) {
-          navigateTo('/pages/post/post?id=' + postId);
-        } else {
-          window.location.href = './post.html?id=' + postId;
-        }
+        window.location.href = './post.html?id=' + postId;
       }
     }
   </script>

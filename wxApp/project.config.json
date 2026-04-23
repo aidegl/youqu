@@ -35,11 +35,15 @@
     "showES6CompileOption": false,
     "useCompilerPlugins": false,
     "compileWorklet": false,
-    "uploadWithSourceMap": true,
     "localPlugins": false,
     "condition": false,
     "swc": false,
-    "disableSWC": true
+    "disableSWC": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
   },
   "condition": {},
   "compileType": "miniprogram",
@@ -48,5 +52,6 @@
     "ignore": [],
     "include": []
   },
-  "editorSetting": {}
+  "editorSetting": {},
+  "libVersion": "3.15.2"
 }

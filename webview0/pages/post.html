@@ -103,20 +103,13 @@
       }
     }
 
+    // 简化导航：在小程序 webview 内直接使用页面跳转
     function navigateTo(url) {
-      if (isInMiniProgram() && window.wx.miniProgram) {
-        window.wx.miniProgram.navigateTo({ url });
-      } else {
-        window.location.href = url;
-      }
+      window.location.href = url;
     }
 
     function navigateBack() {
-      if (isInMiniProgram() && window.wx.miniProgram) {
-        window.wx.miniProgram.navigateBack();
-      } else {
-        window.history.back();
-      }
+      window.history.back();
     }
 
     // ========== 用户信息 ==========
@@ -437,22 +430,16 @@
 
     function goToUserSpace(userId) {
       if (!userId) return;
-      if (isInMiniProgram()) {
-        navigateTo('/pages/profile-space/profile-space?id=' + userId);
-      } else {
-        window.location.href = 'profile-space.html?id=' + userId;
-      }
+      window.location.href = 'profile-space.html?id=' + userId;
     }
 
     function sharePost() {
-      if (isInMiniProgram()) {
-        // 小程序分享需要原生支持
-      } else {
-        const url = window.location.href;
-        navigator.clipboard.writeText(url).then(() => {
-          alert('链接已复制');
-        });
-      }
+      const url = window.location.href;
+      navigator.clipboard.writeText(url).then(() => {
+        alert('链接已复制');
+      }).catch(() => {
+        alert('分享失败');
+      });
     }
   </script>
 </body>

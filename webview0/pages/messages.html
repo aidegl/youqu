@@ -14,12 +14,11 @@
   <!-- 全局函数必须在 HTML 渲染前定义 -->
   <script>
     window.goToHome = function() {
-      console.log('[Messages] goToHome - jumping to entrance');
+      console.log('[Messages] goToHome');
       window.location.href = '../entrance.html';
     };
-
     window.goToProfile = function() {
-      console.log('[Messages] goToProfile - jumping to profile');
+      console.log('[Messages] goToProfile');
       window.location.href = 'profile.html';
     };
   </script>
@@ -224,11 +223,7 @@
     }
 
     function goToChat(taskId, postId, otherUserId) {
-      if (isInMiniProgram()) {
-        navigateTo(`/pages/chat/chat?taskId=${taskId}&postId=${postId}&otherUserId=${otherUserId}`);
-      } else {
-        window.location.href = `./chat.html?taskId=${taskId}&postId=${postId}&otherUserId=${otherUserId}`;
-      }
+      window.location.href = `./chat.html?taskId=${taskId}&postId=${postId}&otherUserId=${otherUserId}`;
     }
   </script>
 </body>

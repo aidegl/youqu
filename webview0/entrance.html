@@ -82,49 +82,32 @@
 
     // ========== 功能函数（全局作用域） - 必须在渲染前定义 ==========
 
-    // 点击帖子卡片跳转详情
+    // 在小程序 webview 中，所有页面都在同一个 webview 内
+    // 直接使用 window.location.href 进行页面内跳转
+
     window.goToDetail = function(id) {
-      console.log('[Entrance] goToDetail called, id:', id);
-      if (isInMiniProgram()) {
-        navigateTo('/pages/post/post?id=' + id);
-      } else {
-        window.location.href = 'pages/post.html?id=' + id;
-      }
+      console.log('[Entrance] goToDetail, id:', id);
+      window.location.href = 'pages/post.html?id=' + id;
     };
 
-    // 点击消息按钮
     window.goToMessages = function() {
-      console.log('[Entrance] goToMessages called');
-      if (isInMiniProgram()) {
-        navigateTo('/pages/messages/messages');
-      } else {
-        window.location.href = 'pages/messages.html';
-      }
+      console.log('[Entrance] goToMessages');
+      window.location.href = 'pages/messages.html';
     };
 
-    // 点击我的按钮
     window.goToProfile = function() {
-      console.log('[Entrance] goToProfile called');
-      if (isInMiniProgram()) {
-        navigateTo('/pages/profile/profile');
-      } else {
-        window.location.href = 'pages/profile.html';
-      }
+      console.log('[Entrance] goToProfile');
+      window.location.href = 'pages/profile.html';
     };
 
-    // 点击发布按钮
     window.goToPublish = function() {
-      console.log('[Entrance] goToPublish called');
+      console.log('[Entrance] goToPublish');
       if (!userInfo) {
         debugLog('[Community] 未登录，请求小程序登录', 'info');
         postMessage({ type: 'login' });
         return;
       }
-      if (isInMiniProgram()) {
-        navigateTo('/pages/publish/publish');
-      } else {
-        window.location.href = 'pages/publish.html';
-      }
+      window.location.href = 'pages/publish.html';
     };
 
     // 分类切换

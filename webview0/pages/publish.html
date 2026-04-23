@@ -149,15 +149,11 @@
     }
 
     function navigateBack() {
-      if (isInMiniProgram() && window.wx.miniProgram) {
-        window.wx.miniProgram.navigateBack();
-      } else {
-        window.history.back();
-      }
+      window.history.back();
     }
 
     function goBack() {
-      navigateBack();
+      window.history.back();
     }
 
     // ========== 用户信息 ==========
