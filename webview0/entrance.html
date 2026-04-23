@@ -313,18 +313,49 @@
     let currentPage = 'home';
     let currentData = {};
 
-    async function initApp() {
-      // 获取用户信息
+    // 初始化用户信息（从 hash 获取并查询完整信息）
+    async function initUserInfo() {
       const hashParams = getHashParams();
-      if (hashParams.openid) {
+      console.log('[SPA] hashParams:', hashParams);
+
+      if (hashParams.openid && hashParams.userId) {
+        // 设置基本 userInfo
         userInfo = { openid: hashParams.openid, id: hashParams.userId };
+        console.log('[SPA] 基本 userInfo:', userInfo);
+
+        // 查询完整用户信息
+        try {
+          const userRes = await window.API.getUserInfo(hashParams.userId);
+          if (userRes.success && userRes.data) {
+            userInfo = {
+              openid: hashParams.openid,
+              id: hashParams.userId,
+              nickname: userRes.data.nickname || userRes.data.name || '用户',
+              avatar: userRes.data.avatar || 'https://fp1.mingdaoyun.cn/customIcon/0_lego.svg'
+            };
+            console.log('[SPA] 完整 userInfo:', userInfo);
+          }
+        } catch (e) {
+          console.log('[SPA] 获取用户信息失败:', e);
+        }
       }
+
+      return userInfo;
+    }
+
+    async function initApp() {
+      console.log('[SPA] initApp 开始');
+
+      // 初始化用户信息
+      await initUserInfo();
 
       // 获取审核状态
       const configRes = await window.API.getSysConfig();
       const auditMode = configRes.success && configRes.isSpecialMode;
 
       console.log('[SPA] auditMode:', auditMode);
+
+      const hashParams = getHashParams();
 
       // 根据审核状态决定初始页面
       if (auditMode) {
@@ -345,18 +376,17 @@
       await renderPage();
     }
 
-    // 监听 hash 变化
+    // 监听 hash 变化（小程序返回时会触发）
     window.addEventListener('hashchange', async function() {
-      const hashParams = getHashParams();
-      if (hashParams.openid) {
-        userInfo = { openid: hashParams.openid, id: hashParams.userId };
-      }
-      if (hashParams.page) {
-        currentPage = hashParams.page;
-        currentData = {};
-        if (hashParams.id) currentData.id = hashParams.id;
-        if (hashParams.userId) currentData.userId = hashParams.userId;
-        if (hashParams.cat) currentData.cat = hashParams.cat;
+      console.log('[SPA] hashchange 触发');
+      const oldUserInfo = userInfo;
+
+      // 重新初始化用户信息
+      await initUserInfo();
+
+      // 如果用户信息有变化，重新渲染当前页面
+      if (oldUserInfo?.openid !== userInfo?.openid || oldUserInfo?.id !== userInfo?.id) {
+        console.log('[SPA] 用户信息变化，重新渲染');
         await renderPage();
       }
     });

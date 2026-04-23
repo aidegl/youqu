@@ -71,11 +71,27 @@ Page({
     const baseUrl = urlParts[0];
     const currentHash = urlParts[1] || '';
 
-    const newHash = `openid=${openid}&userId=${userId}`;
+    // 解析现有 hash 参数，保留 page 等参数
+    const hashParams = {};
+    if (currentHash) {
+      currentHash.split('&').forEach(pair => {
+        const [key, value] = pair.split('=');
+        if (key) hashParams[key] = value;
+      });
+    }
+
+    // 更新 openid 和 userId
+    hashParams.openid = openid;
+    if (userId) hashParams.userId = userId;
+
+    // 构建新的 hash
+    const newHash = Object.entries(hashParams).map(([k, v]) => `${k}=${v}`).join('&');
     const newUrl = `${baseUrl}#${newHash}`;
 
-    if (currentHash !== newHash) {
-      console.log('[Webview] 同步 openid:', openid);
+    // 检查是否需要更新（避免重复更新）
+    const oldOpenid = currentHash.match(/openid=([^&]+)/)?.[1];
+    if (oldOpenid !== openid) {
+      console.log('[Webview] 同步 openid:', openid, '完整 URL:', newUrl);
       this.setData({ url: newUrl });
     }
   },
