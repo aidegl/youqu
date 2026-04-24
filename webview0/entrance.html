@@ -157,30 +157,82 @@
 
     /* ========== 培训页样式 ========== */
     .training-container { min-height: 100vh; background: #f5f5f5; padding-bottom: 20px; }
-    .training-header { padding: 12px 15px; background: #3054EB; color: #fff; }
+    .training-header { padding: 15px; background: linear-gradient(135deg, #3054EB, #4A7AF7); color: #fff; }
     .training-title { font-size: 18px; font-weight: 600; }
-    .stats-card { display: flex; background: rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; margin-top: 10px; }
+    .training-subtitle { font-size: 12px; opacity: 0.8; margin-top: 4px; }
+    .stats-card { display: flex; background: rgba(255,255,255,0.15); border-radius: 8px; padding: 12px; margin-top: 12px; }
     .stat-item-training { flex: 1; text-align: center; }
     .stat-value { font-size: 20px; font-weight: 600; }
     .stat-label { font-size: 11px; opacity: 0.8; }
-    .quick-actions { display: flex; background: #fff; border-radius: 8px; padding: 12px; margin: 10px 15px; }
-    .action-item { flex: 1; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
-    .action-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 4px; background: #E3F2FD; }
-    .action-text { font-size: 12px; color: #666; }
-    .course-card { display: flex; background: #fff; border-radius: 8px; padding: 12px; margin: 10px 15px 8px; cursor: pointer; }
-    .course-icon { width: 40px; height: 40px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px; background: #f5f5f5; margin-right: 10px; }
+    .quick-actions { display: flex; background: #fff; border-radius: 8px; padding: 12px; margin: 10px 15px; gap: 8px; }
+    .action-item { flex: 1; display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 8px; border-radius: 8px; }
+    .action-item:hover { background: #f5f5f5; }
+    .action-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 6px; background: linear-gradient(135deg, #E3F2FD, #BBDEFB); }
+    .action-text { font-size: 12px; color: #333; font-weight: 500; }
+    .course-card { display: flex; background: #fff; border-radius: 12px; padding: 15px; margin: 8px 15px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .course-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .course-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 12px; }
+    .course-icon.blue { background: linear-gradient(135deg, #E3F2FD, #90CAF9); }
+    .course-icon.orange { background: linear-gradient(135deg, #FFF3E0, #FFCC80); }
+    .course-icon.green { background: linear-gradient(135deg, #E8F5E9, #A5D6A7); }
+    .course-icon.purple { background: linear-gradient(135deg, #F3E5F5, #CE93D8); }
+    .course-icon.red { background: linear-gradient(135deg, #FFEBEE, #EF9A9A); }
+    .course-icon.yellow { background: linear-gradient(135deg, #FFFDE7, #FFF59D); }
     .course-info { flex: 1; }
-    .course-title { font-size: 14px; font-weight: 500; color: #333; }
-    .course-status { font-size: 10px; padding: 2px 6px; border-radius: 2px; background: #E91E63; color: #fff; }
-    .login-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
-    .login-modal.show { display: flex; }
-    .login-box { background: #fff; border-radius: 12px; padding: 24px; width: 280px; text-align: center; }
-    .login-box-title { font-size: 18px; font-weight: 600; color: #333; margin-bottom: 20px; }
-    .login-input { width: 100%; height: 44px; border: 1px solid #ddd; border-radius: 8px; padding: 0 12px; font-size: 14px; margin-bottom: 12px; outline: none; }
-    .login-btn { width: 100%; height: 44px; background: #3054EB; color: #fff; border-radius: 8px; font-size: 16px; border: none; cursor: pointer; margin-top: 8px; }
-    .login-close { font-size: 12px; color: #999; margin-top: 16px; cursor: pointer; }
-    .login-error { display: none; color: #E91E63; font-size: 13px; margin-top: 12px; }
-    .login-error.show { display: block; }
+    .course-title { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 4px; }
+    .course-desc { font-size: 12px; color: #666; margin-bottom: 8px; }
+    .course-meta { display: flex; align-items: center; gap: 8px; }
+    .course-status { font-size: 10px; padding: 2px 8px; border-radius: 10px; background: #4CAF50; color: #fff; }
+    .course-status.required { background: #E91E63; }
+    .course-status.optional { background: #9E9E9E; }
+    .course-progress { font-size: 11px; color: #999; }
+    .progress-bar { height: 4px; background: #E0E0E0; border-radius: 2px; margin-top: 6px; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #4CAF50, #8BC34A); border-radius: 2px; }
+    .section-title-bar { padding: 12px 15px; font-size: 14px; font-weight: 600; color: #333; background: #fff; margin-top: 10px; border-bottom: 1px solid #eee; }
+    /* 课程详情页 */
+    .course-detail-header { padding: 15px; background: linear-gradient(135deg, #3054EB, #4A7AF7); color: #fff; }
+    .course-detail-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+    .course-detail-meta { font-size: 12px; opacity: 0.8; }
+    .chapter-list { padding: 10px 15px; }
+    .chapter-card { background: #fff; border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer; }
+    .chapter-header { display: flex; align-items: center; }
+    .chapter-num { width: 28px; height: 28px; border-radius: 50%; background: #3054EB; color: #fff; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; margin-right: 10px; }
+    .chapter-num.completed { background: #4CAF50; }
+    .chapter-title { flex: 1; font-size: 14px; color: #333; }
+    .chapter-duration { font-size: 12px; color: #999; }
+    .chapter-content { font-size: 13px; color: #666; margin-top: 8px; line-height: 1.6; padding-left: 38px; }
+    /* 考试页面 */
+    .exam-header { padding: 15px; background: linear-gradient(135deg, #FF9800, #FFB74D); color: #fff; }
+    .exam-title { font-size: 18px; font-weight: 600; }
+    .exam-info { font-size: 12px; opacity: 0.8; margin-top: 6px; }
+    .question-list { padding: 15px; }
+    .question-card { background: #fff; border-radius: 12px; padding: 15px; margin-bottom: 12px; }
+    .question-num { font-size: 12px; color: #3054EB; font-weight: 600; margin-bottom: 8px; }
+    .question-text { font-size: 14px; color: #333; line-height: 1.6; margin-bottom: 12px; }
+    .option-list { display: flex; flex-direction: column; gap: 8px; }
+    .option-item { display: flex; align-items: center; padding: 10px 12px; border: 1px solid #E0E0E0; border-radius: 8px; cursor: pointer; }
+    .option-item.selected { border-color: #3054EB; background: #E3F2FD; }
+    .option-item:hover { background: #f5f5f5; }
+    .option-radio { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #999; margin-right: 10px; display: flex; align-items: center; justify-content: center; }
+    .option-item.selected .option-radio { border-color: #3054EB; background: #3054EB; }
+    .option-item.selected .option-radio::after { content: ''; width: 6px; height: 6px; background: #fff; border-radius: 50%; }
+    .option-text { flex: 1; font-size: 14px; color: #333; }
+    .submit-exam-btn { width: calc(100% - 30px); margin: 15px; height: 44px; background: linear-gradient(135deg, #3054EB, #4A7AF7); color: #fff; border-radius: 8px; font-size: 16px; border: none; cursor: pointer; }
+    /* 学习记录页 */
+    .record-header { padding: 15px; background: linear-gradient(135deg, #4CAF50, #81C784); color: #fff; }
+    .record-title { font-size: 18px; font-weight: 600; }
+    .record-list { padding: 15px; }
+    .record-item { display: flex; background: #fff; border-radius: 8px; padding: 12px; margin-bottom: 8px; }
+    .record-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; margin-right: 10px; background: #E3F2FD; }
+    .record-info { flex: 1; }
+    .record-name { font-size: 14px; color: #333; font-weight: 500; }
+    .record-time { font-size: 12px; color: #999; margin-top: 4px; }
+    .record-status { font-size: 12px; color: #4CAF50; }
+    /* 公告栏 */
+    .notice-bar { display: flex; align-items: center; background: #FFF3E0; padding: 10px 15px; margin: 0 15px 10px; border-radius: 8px; }
+    .notice-icon { font-size: 16px; margin-right: 8px; }
+    .notice-text { font-size: 13px; color: #E65100; }
+    /* 底部 */
     .footer-text { text-align: center; padding: 20px; color: #999; font-size: 11px; }
   </style>
 </head>
@@ -194,18 +246,6 @@
 
   <!-- 页面容器 -->
   <div id="appContainer"></div>
-
-  <!-- 登录弹窗（培训页用） -->
-  <div class="login-modal" id="loginModal">
-    <div class="login-box">
-      <div class="login-box-title">员工登录</div>
-      <input type="text" class="login-input" id="empId" placeholder="请输入员工号" maxlength="20">
-      <input type="password" class="login-input" id="empPwd" placeholder="请输入密码" maxlength="20">
-      <button class="login-btn" onclick="doFakeLogin()">登录</button>
-      <div class="login-error" id="loginError">员工号或密码错误</div>
-      <div class="login-close" onclick="hideLoginModal()">取消</div>
-    </div>
-  </div>
 
   <!-- 评论输入框（详情页用） -->
   <div class="comment-input-box" id="commentInputBox" style="display: none;">
@@ -437,6 +477,18 @@
           break;
         case 'training':
           renderTrainingPage(container);
+          bottomNav.style.display = 'none';
+          break;
+        case 'courseDetail':
+          renderCourseDetailPage(container, currentData.courseId);
+          bottomNav.style.display = 'none';
+          break;
+        case 'exam':
+          renderExamPage(container, currentData.courseId);
+          bottomNav.style.display = 'none';
+          break;
+        case 'record':
+          renderRecordPage(container);
           bottomNav.style.display = 'none';
           break;
         case 'detail':
@@ -989,57 +1041,385 @@
     }
 
     // ========== 培训页渲染 ==========
+    // 课程数据
+    const trainingCourses = [
+      {
+        id: 'rules',
+        title: '公司规章制度',
+        desc: '了解公司组织架构、考勤制度、薪酬福利等基本规章制度',
+        icon: '📋',
+        color: 'blue',
+        required: true,
+        chapters: [
+          { num: 1, title: '公司简介与组织架构', duration: '15分钟', content: '友趣科技有限公司成立于2020年，是一家专注于校园社交与生活服务的互联网公司。公司采用扁平化管理，设有产品部、技术部、运营部、市场部四大核心部门。' },
+          { num: 2, title: '考勤与请假制度', duration: '20分钟', content: '标准工作时间：9:00-18:00，午休时间：12:00-13:00。迟到超过15分钟需提交说明，请假需提前申请并获得部门主管批准。' },
+          { num: 3, title: '薪酬福利说明', duration: '25分钟', content: '薪酬结构：基本工资+绩效奖金+年终奖。福利包括五险一金、带薪年假、节日福利、团建活动、免费下午茶等。' },
+          { num: 4, title: '保密与安全规定', duration: '15分钟', content: '员工需签署保密协议，公司内部资料严禁外泄。办公设备需妥善保管，离职时需归还所有公司资产。' }
+        ],
+        progress: 75
+      },
+      {
+        id: 'safety',
+        title: '安全培训',
+        desc: '办公安全、数据安全、应急处理等安全知识培训',
+        icon: '🛡️',
+        color: 'orange',
+        required: true,
+        chapters: [
+          { num: 1, title: '办公场所安全', duration: '20分钟', content: '注意用电安全，不私接电源；保持通道畅通；了解消防器材位置和使用方法；紧急情况听从指挥有序撤离。' },
+          { num: 2, title: '信息安全基础', duration: '30分钟', content: '密码设置要求：长度≥8位，包含字母数字符号；定期更换密码；不点击不明链接；不在公共电脑保存账号信息。' },
+          { num: 3, title: '应急处理流程', duration: '25分钟', content: '火灾：立即报警，使用灭火器扑救小火，大火时有序撤离。人员受伤：立即联系HR部门，严重情况拨打120。' },
+          { num: 4, title: '网络安全防护', duration: '20分钟', content: '识别钓鱼邮件技巧；不下载不明软件；定期更新系统补丁；使用VPN访问公司内网；敏感数据加密存储。' }
+        ],
+        progress: 50
+      },
+      {
+        id: 'business',
+        title: '业务流程培训',
+        desc: '产品开发流程、项目协作流程、客户服务标准',
+        icon: '📊',
+        color: 'green',
+        required: true,
+        chapters: [
+          { num: 1, title: '产品开发流程', duration: '40分钟', content: '需求收集→需求评审→设计阶段→开发阶段→测试阶段→上线发布→数据监控→迭代优化。每个阶段需完成对应文档并通过评审。' },
+          { num: 2, title: '项目管理规范', duration: '35分钟', content: '项目立项需提交可行性报告；使用公司指定项目管理工具；每周提交进度报告；遇到问题及时沟通升级。' },
+          { num: 3, title: '跨部门协作', duration: '25分钟', content: '明确责任边界；建立沟通机制；定期召开协调会议；重要决策需多方确认；项目结束后进行复盘总结。' },
+          { num: 4, title: '客户服务标准', duration: '30分钟', content: '服务态度：热情、专业、耐心；响应时间：普通问题≤4小时，紧急问题≤1小时；问题跟踪：建立服务记录，确保闭环处理。' }
+        ],
+        progress: 25
+      },
+      {
+        id: 'teamwork',
+        title: '团队协作',
+        desc: '沟通技巧、会议规范、冲突处理、团队建设',
+        icon: '👥',
+        color: 'purple',
+        required: true,
+        chapters: [
+          { num: 1, title: '有效沟通技巧', duration: '30分钟', content: '沟通原则：清晰表达、认真倾听、及时反馈。面对面沟通优先，重要事项需书面确认。避免情绪化沟通，保持专业态度。' },
+          { num: 2, title: '会议参与规范', duration: '20分钟', content: '会前准备：阅读议程，准备材料；会中行为：准时参加，积极参与，手机静音；会后跟进：落实任务，及时反馈进度。' },
+          { num: 3, title: '冲突处理方法', duration: '25分钟', content: '冲突处理步骤：冷静分析→私下沟通→寻求共识→必要时请上级协调。避免公开争吵，保持尊重态度，聚焦问题本身而非个人。' },
+          { num: 4, title: '团队建设活动', duration: '15分钟', content: '公司每季度组织团建活动；鼓励自发组织兴趣小组；团队目标达成后进行庆祝；新人入职安排欢迎仪式。' }
+        ],
+        progress: 0
+      },
+      {
+        id: 'product',
+        title: '产品知识',
+        desc: '友趣校园产品介绍、核心功能、用户群体',
+        icon: '📦',
+        color: 'red',
+        required: false,
+        chapters: [
+          { num: 1, title: '产品定位与愿景', duration: '20分钟', content: '友趣校园致力于打造最懂大学生的校园生活平台。我们的愿景是让每一位大学生都能轻松找到志同道合的朋友，解决校园生活中的各种需求。' },
+          { num: 2, title: '核心功能介绍', duration: '35分钟', content: '核心功能：赏金任务（悬赏求助）、问答社区（知识分享）、吐槽专区（情感表达）、即时聊天（即时沟通）。每个功能模块都有明确的使用场景和规则。' },
+          { num: 3, title: '用户群体分析', duration: '25分钟', content: '目标用户：在校大学生。用户特点：追求社交、乐于分享、时间灵活、消费能力有限。用户痛点：社交圈子小、校园信息获取难、生活琐事需人帮忙。' },
+          { num: 4, title: '竞品分析', duration: '30分钟', content: '主要竞品：校园贴吧、表白墙、校园微信群。我们的优势：实名认证更安全、悬赏机制更高效、分类清晰更易找、移动端体验更好。' }
+        ],
+        progress: 0
+      },
+      {
+        id: 'tech',
+        title: '技术基础',
+        desc: '开发工具使用、代码规范、测试流程',
+        icon: '💻',
+        color: 'yellow',
+        required: false,
+        chapters: [
+          { num: 1, title: '开发环境配置', duration: '30分钟', content: '推荐IDE：VSCode、WebStorm；版本控制：Git；项目管理：公司内部系统；文档协作：飞书/语雀。所有开发工具需遵循公司统一配置标准。' },
+          { num: 2, title: '代码编写规范', duration: '40分钟', content: '命名规范：驼峰命名法；注释要求：关键逻辑必须注释；代码审查：提交前需自检；提交规范：写清楚commit message。' },
+          { num: 3, title: '测试流程说明', duration: '25分钟', content: '开发自测→代码审查→功能测试→集成测试→上线测试。测试报告需记录所有问题，修复后需回归测试确保问题已解决。' },
+          { num: 4, title: '问题处理流程', duration: '20分钟', content: '发现问题→记录问题→分析原因→提出方案→实施修复→验证结果→更新文档。严重问题需立即上报，并启动应急预案。' }
+        ],
+        progress: 100
+      }
+    ];
+
+    // 考试题目数据
+    const examQuestions = {
+      rules: [
+        { num: 1, text: '友趣科技有限公司成立于哪一年？', options: ['2018年', '2019年', '2020年', '2021年'], answer: 2 },
+        { num: 2, text: '公司的标准工作时间是什么？', options: ['8:00-17:00', '9:00-18:00', '9:30-18:30', '10:00-19:00'], answer: 1 },
+        { num: 3, text: '薪酬结构包含哪些部分？', options: ['基本工资+年终奖', '基本工资+绩效奖金', '基本工资+绩效奖金+年终奖', '固定工资'], answer: 2 },
+        { num: 4, text: '员工离职时需要怎么做？', options: ['直接离开', '归还部分设备', '归还所有公司资产', '自行处理'], answer: 2 }
+      ],
+      safety: [
+        { num: 1, text: '密码设置的最低长度要求是多少位？', options: ['6位', '8位', '10位', '12位'], answer: 1 },
+        { num: 2, text: '遇到火灾时应该怎么做？', options: ['立即逃跑', '报警并使用灭火器扑救小火', '等待救援', '拍照发朋友圈'], answer: 1 },
+        { num: 3, text: '哪种做法是正确的网络安全习惯？', options: ['点击所有邮件链接', '下载不明软件', '定期更新系统补丁', '在公共电脑保存账号'], answer: 2 },
+        { num: 4, text: '紧急情况下人员受伤应联系哪个部门？', options: ['技术部', '运营部', 'HR部门', '市场部'], answer: 2 }
+      ],
+      business: [
+        { num: 1, text: '产品开发流程的正确顺序是什么？', options: ['开发→设计→测试', '需求→开发→上线', '需求→设计→开发→测试→上线', '上线→测试→开发'], answer: 2 },
+        { num: 2, text: '普通问题的响应时间要求是多少？', options: ['≤1小时', '≤2小时', '≤4小时', '≤24小时'], answer: 2 },
+        { num: 3, text: '项目结束后应该做什么？', options: ['直接开始新项目', '复盘总结', '休息放松', '写报告'], answer: 1 },
+        { num: 4, text: '客户服务中紧急问题的响应时间要求是？', options: ['≤30分钟', '≤1小时', '≤2小时', '≤4小时'], answer: 1 }
+      ]
+    };
+
     function renderTrainingPage(container) {
-      const courses = [
-        { title: '公司规章制度', icon: '📋' },
-        { title: '安全培训', icon: '🛡️' },
-        { title: '业务流程培训', icon: '📊' },
-        { title: '团队协作', icon: '👥' },
-        { title: '产品知识', icon: '📦' }
-      ];
+      // 计算统计数据
+      const totalCourses = trainingCourses.length;
+      const requiredCourses = trainingCourses.filter(c => c.required).length;
+      const completedCourses = trainingCourses.filter(c => c.progress === 100).length;
+      const totalProgress = Math.round(trainingCourses.reduce((sum, c) => sum + c.progress, 0) / totalCourses);
 
       container.innerHTML = `
         <div class="training-container">
           <div class="training-header">
-            <div class="training-title">友趣员工培训</div>
+            <div class="training-title">友趣员工培训平台</div>
+            <div class="training-subtitle">打造专业团队，共创美好未来</div>
             <div class="stats-card">
-              <div class="stat-item-training"><div class="stat-value">5</div><div class="stat-label">必修课程</div></div>
-              <div class="stat-item-training"><div class="stat-value">1</div><div class="stat-label">已完成</div></div>
-              <div class="stat-item-training"><div class="stat-value">20%</div><div class="stat-label">进度</div></div>
+              <div class="stat-item-training"><div class="stat-value">${requiredCourses}</div><div class="stat-label">必修课程</div></div>
+              <div class="stat-item-training"><div class="stat-value">${completedCourses}</div><div class="stat-label">已完成</div></div>
+              <div class="stat-item-training"><div class="stat-value">${totalProgress}%</div><div class="stat-label">总进度</div></div>
             </div>
           </div>
+
+          <div class="notice-bar">
+            <span class="notice-icon">📢</span>
+            <span class="notice-text">温馨提示：请于本月25日前完成所有必修课程学习</span>
+          </div>
+
           <div class="quick-actions">
-            <div class="action-item" onclick="showLoginModal()"><div class="action-icon">📖</div><div class="action-text">课程中心</div></div>
-            <div class="action-item" onclick="showLoginModal()"><div class="action-icon">📝</div><div class="action-text">在线考试</div></div>
-            <div class="action-item" onclick="showLoginModal()"><div class="action-icon">📋</div><div class="action-text">学习记录</div></div>
-          </div>
-          ${courses.map(c => `
-            <div class="course-card" onclick="showLoginModal()">
-              <div class="course-icon">${c.icon}</div>
-              <div class="course-info">
-                <div class="course-title">${c.title}</div>
-                <span class="course-status">必修</span>
-              </div>
+            <div class="action-item" onclick="navigate('training')">
+              <div class="action-icon">📚</div>
+              <div class="action-text">课程中心</div>
             </div>
-          `).join('')}
+            <div class="action-item" onclick="showExamList()">
+              <div class="action-icon">📝</div>
+              <div class="action-text">在线考试</div>
+            </div>
+            <div class="action-item" onclick="navigate('record')">
+              <div class="action-icon">📋</div>
+              <div class="action-text">学习记录</div>
+            </div>
+          </div>
+
+          <div class="section-title-bar">必修课程</div>
+          ${trainingCourses.filter(c => c.required).map(c => renderCourseCard(c)).join('')}
+
+          <div class="section-title-bar">选修课程</div>
+          ${trainingCourses.filter(c => !c.required).map(c => renderCourseCard(c)).join('')}
+
+          <div class="footer-text">友趣科技有限公司 © 2024 · 员工培训系统 v1.0</div>
+        </div>
+      `;
+    }
+
+    function renderCourseCard(course) {
+      return `
+        <div class="course-card" onclick="navigate('courseDetail', {courseId:'${course.id}'})">
+          <div class="course-icon ${course.color}">${course.icon}</div>
+          <div class="course-info">
+            <div class="course-title">${course.title}</div>
+            <div class="course-desc">${course.desc}</div>
+            <div class="course-meta">
+              <span class="course-status ${course.required ? 'required' : 'optional'}">${course.required ? '必修' : '选修'}</span>
+              <span class="course-progress">${course.chapters.length}章节 · ${course.progress}%完成</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:${course.progress}%"></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCourseDetailPage(container, courseId) {
+      const course = trainingCourses.find(c => c.id === courseId) || trainingCourses[0];
+
+      container.innerHTML = `
+        <div class="training-container">
+          <div class="course-detail-header">
+            <div style="cursor:pointer;font-size:14px;margin-bottom:10px" onclick="navigate('training')">← 返回课程列表</div>
+            <div class="course-detail-title">${course.icon} ${course.title}</div>
+            <div class="course-detail-meta">${course.chapters.length}个章节 · ${course.required ? '必修课程' : '选修课程'} · 进度 ${course.progress}%</div>
+            <div class="progress-bar" style="margin-top:10px;height:6px">
+              <div class="progress-fill" style="width:${course.progress}%"></div>
+            </div>
+          </div>
+
+          <div class="chapter-list">
+            ${course.chapters.map(ch => `
+              <div class="chapter-card" onclick="toggleChapterContent(this)">
+                <div class="chapter-header">
+                  <div class="chapter-num ${ch.num <= Math.ceil(course.progress / 25) ? 'completed' : ''}">${ch.num}</div>
+                  <div class="chapter-title">${ch.title}</div>
+                  <div class="chapter-duration">${ch.duration}</div>
+                </div>
+                <div class="chapter-content" style="display:none">
+                  ${ch.content}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <button class="submit-exam-btn" onclick="navigate('exam', {courseId:'${course.id}'})">开始课程测试</button>
+
           <div class="footer-text">友趣科技有限公司 © 2024</div>
         </div>
       `;
     }
 
-    function showLoginModal() {
-      document.getElementById('loginModal').classList.add('show');
-      document.getElementById('empId').value = '';
-      document.getElementById('empPwd').value = '';
-      document.getElementById('loginError').classList.remove('show');
+    function toggleChapterContent(card) {
+      const content = card.querySelector('.chapter-content');
+      content.style.display = content.style.display === 'none' ? 'block' : 'none';
     }
 
-    function hideLoginModal() {
-      document.getElementById('loginModal').classList.remove('show');
+    function showExamList() {
+      const container = document.getElementById('appContainer');
+      const courses = trainingCourses.filter(c => c.progress >= 50);
+
+      container.innerHTML = `
+        <div class="training-container">
+          <div class="exam-header">
+            <div style="cursor:pointer;font-size:14px;margin-bottom:10px" onclick="navigate('training')">← 返回</div>
+            <div class="exam-title">📝 在线考试</div>
+            <div class="exam-info">完成课程学习后可参加考试，考试通过后获得学分</div>
+          </div>
+
+          <div class="chapter-list">
+            ${courses.length > 0 ? courses.map(c => `
+              <div class="chapter-card" onclick="navigate('exam', {courseId:'${c.id}'})">
+                <div class="chapter-header">
+                  <div class="chapter-num ${c.progress === 100 ? 'completed' : ''}">${c.icon}</div>
+                  <div class="chapter-title">${c.title} 测试</div>
+                  <div class="chapter-duration">4道题 · 10分钟</div>
+                </div>
+                <div class="chapter-content" style="display:block">
+                  ${c.progress === 100 ? '✅ 学习完成，可参加考试' : '📚 学习进度：' + c.progress + '%'}
+                </div>
+              </div>
+            `).join('') : '<div style="padding:20px;text-align:center;color:#999">暂无可参加的考试，请先完成课程学习</div>'}
+          </div>
+
+          <div class="footer-text">友趣科技有限公司 © 2024</div>
+        </div>
+      `;
     }
 
-    function doFakeLogin() {
-      document.getElementById('loginError').classList.add('show');
+    let examAnswers = {};
+
+    function renderExamPage(container, courseId) {
+      const course = trainingCourses.find(c => c.id === courseId) || trainingCourses[0];
+      const questions = examQuestions[courseId] || examQuestions.rules;
+      examAnswers = {};
+
+      container.innerHTML = `
+        <div class="training-container">
+          <div class="exam-header">
+            <div style="cursor:pointer;font-size:14px;margin-bottom:10px" onclick="navigate('courseDetail', {courseId:'${courseId}'})">← 返回课程</div>
+            <div class="exam-title">📝 ${course.title} 测试</div>
+            <div class="exam-info">共 ${questions.length} 题 · 请认真作答</div>
+          </div>
+
+          <div class="question-list">
+            ${questions.map(q => `
+              <div class="question-card" id="question-${q.num}">
+                <div class="question-num">第 ${q.num} 题</div>
+                <div class="question-text">${q.text}</div>
+                <div class="option-list">
+                  ${q.options.map((opt, i) => `
+                    <div class="option-item" onclick="selectOption(${q.num}, ${i})">
+                      <div class="option-radio"></div>
+                      <div class="option-text">${opt}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <button class="submit-exam-btn" onclick="submitExam('${courseId}')">提交答案</button>
+
+          <div class="footer-text">友趣科技有限公司 © 2024</div>
+        </div>
+      `;
+    }
+
+    function selectOption(questionNum, optionIndex) {
+      examAnswers[questionNum] = optionIndex;
+
+      // 更新选中状态
+      const card = document.getElementById('question-' + questionNum);
+      card.querySelectorAll('.option-item').forEach((item, i) => {
+        item.classList.toggle('selected', i === optionIndex);
+      });
+    }
+
+    function submitExam(courseId) {
+      const questions = examQuestions[courseId] || examQuestions.rules;
+      let correctCount = 0;
+
+      questions.forEach(q => {
+        if (examAnswers[q.num] === q.answer) {
+          correctCount++;
+        }
+      });
+
+      const score = Math.round(correctCount / questions.length * 100);
+      const passed = score >= 60;
+
+      alert(`考试结果：\n正确 ${correctCount}/${questions.length} 题\n得分：${score}分\n${passed ? '✅ 考试通过！' : '❌ 未通过，请重新学习后再次考试'}`);
+
+      if (passed) {
+        navigate('record');
+      }
+    }
+
+    function renderRecordPage(container) {
+      // 模拟学习记录数据
+      const records = [
+        { icon: '📋', name: '公司规章制度', time: '2024-03-20 14:30', status: '已完成 · 75分' },
+        { icon: '🛡️', name: '安全培训', time: '2024-03-18 09:15', status: '已完成 · 88分' },
+        { icon: '📊', name: '业务流程培训', time: '2024-03-15 16:00', status: '学习中 · 进度25%' },
+        { icon: '💻', name: '技术基础', time: '2024-03-10 10:30', status: '已完成 · 92分' },
+        { icon: '👥', name: '团队协作', time: '2024-03-08 13:45', status: '学习中 · 进度0%' }
+      ];
+
+      container.innerHTML = `
+        <div class="training-container">
+          <div class="record-header">
+            <div style="cursor:pointer;font-size:14px;margin-bottom:10px" onclick="navigate('training')">← 返回</div>
+            <div class="record-title">📋 学习记录</div>
+            <div style="font-size:12px;opacity:0.8;margin-top:6px">记录您的学习进度和考试成绩</div>
+          </div>
+
+          <div class="record-list">
+            ${records.map(r => `
+              <div class="record-item">
+                <div class="record-icon">${r.icon}</div>
+                <div class="record-info">
+                  <div class="record-name">${r.name}</div>
+                  <div class="record-time">${r.time}</div>
+                </div>
+                <div class="record-status">${r.status}</div>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="section-title-bar">学习统计</div>
+          <div style="padding:15px;background:#fff">
+            <div style="display:flex;gap:20px">
+              <div style="flex:1;text-align:center;padding:15px;background:#E3F2FD;border-radius:8px">
+                <div style="font-size:24px;font-weight:600;color:#3054EB">5</div>
+                <div style="font-size:12px;color:#666">已学课程</div>
+              </div>
+              <div style="flex:1;text-align:center;padding:15px;background:#E8F5E9;border-radius:8px">
+                <div style="font-size:24px;font-weight:600;color:#4CAF50">3</div>
+                <div style="font-size:12px;color:#666">考试通过</div>
+              </div>
+              <div style="flex:1;text-align:center;padding:15px;background:#FFF3E0;border-radius:8px">
+                <div style="font-size:24px;font-weight:600;color:#FF9800">255</div>
+                <div style="font-size:12px;color:#666">累计学分</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer-text">友趣科技有限公司 © 2024</div>
+        </div>
+      `;
     }
 
     // ========== 初始化 ==========
