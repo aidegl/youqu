@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
-  <title>友趣校园</title>
+  <title>友趣channel</title>
 
   <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
   <script src="./js/api.js"></script>
@@ -234,10 +234,19 @@
     .notice-text { font-size: 13px; color: #E65100; }
     /* 底部 */
     .footer-text { text-align: center; padding: 20px; color: #999; font-size: 11px; }
+    /* 返回按钮 */
+    .back-btn { position: fixed; top: 10px; left: 10px; width: 36px; height: 36px; background: transparent; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 1000; cursor: pointer; }
+    .back-btn img { width: 24px; height: 24px; opacity: 0.8; }
+    .back-btn:hover img { opacity: 1; }
   </style>
 </head>
 
 <body>
+  <!-- 返回按钮 -->
+  <div class="back-btn" id="backBtn" onclick="goBack()" style="display: none;">
+    <img src="images/返回.png" alt="返回">
+  </div>
+
   <!-- 加载状态 -->
   <div class="loading-screen" id="loadingScreen">
     <div class="loading-spinner"></div>
@@ -349,6 +358,45 @@
       });
     }
 
+    // 返回上一页
+    function goBack() {
+      console.log('[SPA] goBack called, currentPage:', currentPage);
+
+      // 如果在小程序环境，使用小程序返回
+      if (isInMiniProgram()) {
+        ensureMiniProgramReady().then(() => {
+          if (window.wx && window.wx.miniProgram && typeof window.wx.miniProgram.navigateBack === 'function') {
+            console.log('[SPA] 调用 wx.miniProgram.navigateBack');
+            window.wx.miniProgram.navigateBack({ delta: 1 });
+          } else {
+            // 如果navigateBack不可用，回退到浏览器方式
+            historyBack();
+          }
+        });
+      } else {
+        // 浏览器环境使用浏览器返回
+        historyBack();
+      }
+    }
+
+    // 浏览器返回逻辑
+    function historyBack() {
+      // 记录页面历史
+      if (pageHistory.length > 1) {
+        pageHistory.pop();
+        const prevPage = pageHistory[pageHistory.length - 1];
+        currentPage = prevPage.page;
+        currentData = prevPage.data || {};
+        renderPage();
+      } else {
+        // 没有历史，回到首页
+        navigate('home');
+      }
+    }
+
+    // 页面历史记录
+    let pageHistory = [];
+
     // ========== 路由控制 ==========
     let currentPage = 'home';
     let currentData = {};
@@ -434,6 +482,10 @@
     // 页面跳转
     function navigate(page, data = {}) {
       console.log('[SPA] navigate:', page, data);
+
+      // 记录页面历史（跳转前）
+      pageHistory.push({ page: currentPage, data: currentData });
+
       currentPage = page;
       currentData = data;
 
@@ -443,6 +495,7 @@
       if (data.id) hashParams.id = data.id;
       if (data.userId) hashParams.userId = data.userId;
       if (data.cat) hashParams.cat = data.cat;
+      if (data.courseId) hashParams.courseId = data.courseId;
 
       updateHash(hashParams);
       renderPage();
@@ -454,11 +507,16 @@
       const loading = document.getElementById('loadingScreen');
       const bottomNav = document.getElementById('bottomNav');
       const commentInput = document.getElementById('commentInputBox');
+      const backBtn = document.getElementById('backBtn');
 
       loading.style.display = 'none';
       commentInput.style.display = 'none';
 
       console.log('[SPA] renderPage:', currentPage);
+
+      // 控制返回按钮显示（首页和培训页不显示）
+      const showBackBtn = currentPage !== 'home' && currentPage !== 'training';
+      backBtn.style.display = showBackBtn ? 'flex' : 'none';
 
       // 更新底部导航状态
       bottomNav.style.display = 'flex';
@@ -1106,12 +1164,12 @@
       {
         id: 'product',
         title: '产品知识',
-        desc: '友趣校园产品介绍、核心功能、用户群体',
+        desc: '友趣channel产品介绍、核心功能、用户群体',
         icon: '📦',
         color: 'red',
         required: false,
         chapters: [
-          { num: 1, title: '产品定位与愿景', duration: '20分钟', content: '友趣校园致力于打造最懂大学生的校园生活平台。我们的愿景是让每一位大学生都能轻松找到志同道合的朋友，解决校园生活中的各种需求。' },
+          { num: 1, title: '产品定位与愿景', duration: '20分钟', content: '友趣channel致力于打造最懂大学生的校园生活平台。我们的愿景是让每一位大学生都能轻松找到志同道合的朋友，解决校园生活中的各种需求。' },
           { num: 2, title: '核心功能介绍', duration: '35分钟', content: '核心功能：赏金任务（悬赏求助）、问答社区（知识分享）、吐槽专区（情感表达）、即时聊天（即时沟通）。每个功能模块都有明确的使用场景和规则。' },
           { num: 3, title: '用户群体分析', duration: '25分钟', content: '目标用户：在校大学生。用户特点：追求社交、乐于分享、时间灵活、消费能力有限。用户痛点：社交圈子小、校园信息获取难、生活琐事需人帮忙。' },
           { num: 4, title: '竞品分析', duration: '30分钟', content: '主要竞品：校园贴吧、表白墙、校园微信群。我们的优势：实名认证更安全、悬赏机制更高效、分类清晰更易找、移动端体验更好。' }

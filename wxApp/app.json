@@ -4,7 +4,7 @@
     "pages/login/index"
   ],
   "window": {
-    "navigationBarTitleText": "友趣校园",
+    "navigationBarTitleText": "友趣channel",
     "navigationBarBackgroundColor": "#3054EB",
     "navigationBarTextStyle": "white"
   },

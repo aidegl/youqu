@@ -115,7 +115,7 @@ Page({
 
   onShareAppMessage() {
     return {
-      title: '友趣校园',
+      title: '友趣channel',
       path: '/pages/webview/index'
     };
   }

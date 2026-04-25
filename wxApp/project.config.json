@@ -1,7 +1,7 @@
 {
   "miniprogramRoot": "./",
   "projectname": "youqu-wxApp",
-  "description": "友趣校园社区",
+  "description": "友趣channel",
   "appid": "wxef28e4600201b359",
   "setting": {
     "urlCheck": true,

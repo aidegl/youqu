@@ -1,7 +1,7 @@
 <view class="login-page">
   <view class="login-header">
     <image class="logo" src="https://fp1.mingdaoyun.cn/customIcon/0_lego.svg"></image>
-    <text class="title">友趣校园</text>
+    <text class="title">友趣channel</text>
   </view>
 
   <view class="login-content">
