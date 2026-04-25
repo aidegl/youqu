@@ -360,36 +360,34 @@
 
     // 返回上一页
     function goBack() {
-      console.log('[SPA] goBack called, currentPage:', currentPage);
+      console.log('[SPA] goBack called, currentPage:', currentPage, 'historyLength:', pageHistory.length);
 
-      // 如果在小程序环境，使用小程序返回
-      if (isInMiniProgram()) {
-        ensureMiniProgramReady().then(() => {
-          if (window.wx && window.wx.miniProgram && typeof window.wx.miniProgram.navigateBack === 'function') {
-            console.log('[SPA] 调用 wx.miniProgram.navigateBack');
-            window.wx.miniProgram.navigateBack({ delta: 1 });
-          } else {
-            // 如果navigateBack不可用，回退到浏览器方式
-            historyBack();
-          }
-        });
-      } else {
-        // 浏览器环境使用浏览器返回
-        historyBack();
-      }
+      // 始终使用 SPA 内部历史返回（不调用小程序 navigateBack）
+      historyBack();
     }
 
     // 浏览器返回逻辑
     function historyBack() {
-      // 记录页面历史
-      if (pageHistory.length > 1) {
-        pageHistory.pop();
-        const prevPage = pageHistory[pageHistory.length - 1];
+      // 如果有页面历史，返回上一页
+      if (pageHistory.length > 0) {
+        const prevPage = pageHistory.pop();
+        console.log('[SPA] historyBack to:', prevPage.page);
         currentPage = prevPage.page;
         currentData = prevPage.data || {};
+
+        // 更新 hash
+        const hashParams = { page: currentPage };
+        if (userInfo?.openid) hashParams.openid = userInfo.openid;
+        if (userInfo?.id) hashParams.userId = userInfo.id;
+        if (currentData.id) hashParams.id = currentData.id;
+        if (currentData.userId) hashParams.userId = currentData.userId;
+        if (currentData.courseId) hashParams.courseId = currentData.courseId;
+
+        updateHash(hashParams);
         renderPage();
       } else {
         // 没有历史，回到首页
+        console.log('[SPA] no history, go to home');
         navigate('home');
       }
     }
